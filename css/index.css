@@ -1,0 +1,191 @@
+html,
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
+#container {
+    display: flex;
+    height: 100%;
+}
+
+#cesiumContainer {
+    flex: 3;
+    background-color: rgba(211, 211, 211, 0.8);
+}
+
+#sideContainer {
+    flex: 0.8;
+    background-color: rgba(213, 213, 213, 0.219);
+    flex-direction: column;
+    display: flex;
+}
+
+#sideContainer_top {
+    height: 4%;
+    min-height: 40px;
+    border: 1px solid lightgray;
+}
+
+#sideContainer_middle {
+    display: flex;
+    flex-direction:column;
+    align-items: center;
+    height: 40%;
+    border: 1px solid lightgray;
+}
+#sideContainer_middle_map {
+    height: 50%;
+    width:95%;
+    margin-top:2.5%;
+    border: 1px solid lightgray;
+}
+#sideContainer_middle_chart {
+    height: 40%;
+    width:95%;
+    margin-top:2.5%;
+    border: 1px solid lightgray;
+}
+
+#sideContainer_buttom {
+    height: 56%;
+    border: 1px solid lightgray;
+}
+
+#sideContainer_buttom_table {
+    width: 90%;
+    /* 宽度占父容器的90% */
+    height: 25%;
+    /* 高度占父容器的60% */
+    margin: 5% auto 0;
+    /* 距上面5%，左右居中（auto） */
+    background-color: rgba(211, 211, 211, 0.288);
+    /* 背景颜色用于可视化 */
+    display: flex;
+    border: 1px solid black;
+    overflow-y: auto;
+    /* 边框用于可视化 */
+    border-radius: 5px;
+    flex-wrap: wrap;
+}
+
+#sideContainer_buttom_drone {
+    width: 90%;
+    /* 宽度占父容器的90% */
+    height: 60%;
+    /* 高度占父容器的60% */
+    margin: 5% auto 0;
+    background-color: rgba(211, 211, 211, 0.288);
+    /* 背景颜色用于可视化 */
+    border: 1px solid black;
+    /* 边框用于可视化 */
+    border-radius: 5px;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+}
+
+#sideContainer_buttom_drone_top{
+    height:40%;
+    background-color: rgb(255, 255, 255);
+    display: flex;
+    flex-direction: row;
+}
+#sideContainer_buttom_drone_buttom{
+    height:60%;
+    background-color: rgb(253, 253, 253);
+    display: flex;
+    flex-direction: row;
+}
+#sideContainer_buttom_drone_buttom_left{
+    height:100%;
+    width: 50%;
+    display: flex;
+    flex-direction:column;
+    justify-content: center;
+    align-items: flex-start;
+    background-color: rgb(255, 255, 255);
+}
+#sideContainer_buttom_drone_buttom_right{
+    height:100%;
+    width: 40%;
+    background-color: rgb(255, 254, 254);
+}
+/* 无人机位置参数设定*/
+input {
+    display: block;
+    margin: 4% auto 0;
+    padding: 8px;
+    width: 50%;
+    left: 10%;
+    height: 10px;
+  }
+
+/* 无人机小方块*/
+.square {
+    width: 40px;
+    height: 40px;
+    background-color: rgba(173, 216, 230, 0.18);
+    margin: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 14px;
+    font-weight: bold;
+    border: 2px solid rgba(173, 216, 230, 0.18);
+}
+.square:hover {
+    box-shadow: 0 0 10px rgba(173, 216, 230, 1), 0 0 20px rgba(173, 216, 230, 0.5); /* 发光效果 */
+}
+
+#sideContainer_buttom_drone_picture {
+    width: 40%;
+    /* 宽度占父容器的90% */
+    height: 100%;
+    /* 高度占父容器的60% */
+    background-color: rgba(229, 229, 229, 0.404);
+    /* 背景颜色用于可视化 */
+    background-size: cover;
+    /* 确保图片覆盖整个窗口 */
+    background-position: center;
+    /* 图片居中显示 */
+    background-repeat: no-repeat;
+    /* 防止图片重复 */
+}
+#sideContainer_buttom_drone_richTextBox {
+    margin-top: 0;
+    width: 60%;
+    height: 100%;
+    border: 1px solid #e6e6e6;
+    padding: 10px;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    background-color: #f9f9f9;
+    overflow-y: auto;
+}
+
+
+button {
+    margin: 5px;
+    /* 按钮之间的间距 */
+    padding: 10px 15px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.roundbutton {
+    border-radius: 50%;
+    width: 20px;
+    height: 30px;
+    background-color: #e8e8e8;
+    background-size: 20px 20px;
+    background-repeat: no-repeat;
+    background-position: center;
+    color: white;
+    font-size: 20px;
+    border: none;
+    cursor: pointer;
+}
