@@ -8,22 +8,25 @@
     <link href="https://cesium.com/downloads/cesiumjs/releases/1.122/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="./css/index.css">
+    <link rel="stylesheet" href="./css/endpointcontainer.css">
 </head>
 <body>
     <div id="container">
-        <div id="cesiumContainer"></div>
+        <div id="cesiumContainer">
+            <div id="endpointcontainer_maincontainer">
+                <div class="close" id = "close_endpointcontainer_maincontainer"></div>
+            </div>
+        </div>
         <div id="sideContainer">
             <div id="sideContainer_top">
-                <button id="addButton" class = "roundbutton" style="background-image: url('..\\DATA\\svg\\无人机.svg');"></button>
-                <button id="catchButton" class = "roundbutton" style="background-image: url('..\\DATA\\svg\\眼睛.svg');"></button>
-                <button id="moveButton" class = "roundbutton" style="background-image: url('..\\DATA\\svg\\飞行.svg');"></button>
-                <button id="createlandsurfaceButton" class = "roundbutton" style="background-image: url('..\\DATA\\svg\\面.svg');"></button>
-                <button id="createEndPointButton" class = "roundbutton" style="background-image: url('..\\DATA\\svg\\终点.svg');"></button>
+                <button id="addButton" class = "roundbutton" style="background-image: url('..\\DATA\\svg\\无人机.svg');" title="导入无人机"></button>
+                <button id="catchButton" class = "roundbutton" style="background-image: url('..\\DATA\\svg\\眼睛.svg');" title="缩放至无人机"></button>
+                <button id="chooseButton" class = "roundbutton" style="background-image: url('..\\DATA\\svg\\鼠标.svg');" title="缩放至无人机"></button>
             </div>
             <div id="sideContainer_middle">
                 <div id="sideContainer_middle_map"></div>
                 <div id="sideContainer_middle_chart">
-                    <canvas id="myChart" width="500" height="200"></canvas>
+                    <canvas id="myChart" class = "mychart"></canvas>
                 </div>
             </div>
             <div id="sideContainer_buttom">
@@ -34,23 +37,17 @@
                         <div id="sideContainer_buttom_drone_richTextBox"></div>
                     </div>
                     <div id="sideContainer_buttom_drone_buttom">
-                        <div id="sideContainer_buttom_drone_buttom_left">
-                            <input type="text" id="inputID" placeholder="ID">
+                        <!-- <div id="sideContainer_buttom_drone_buttom_top">
                             <input type="text" id="inputX" placeholder="X">
                             <input type="text" id="inputY" placeholder="Y">
                             <input type="text" id="inputZ" placeholder="Z">
-                        </div>
-                        <div id="sideContainer_buttom_drone_buttom_right">
-                            <button id="settargetButton" style="
-                                top: 50%;
-                                left: 50%;
-                                transform: translate(0%, 100%);
-                            ">设定目标</button>
-                            <button id="loadtargetButton" style="
-                                top: 50%;
-                                left: 50%;
-                                transform: translate(0%, 100%);
-                            ">导入目标</button>
+                        </div> -->
+                        <div id="sideContainer_buttom_drone_buttom_middle">
+                            <button id="loadtargetButton" class = "roundbutton" style="background-image: url('..\\DATA\\svg\\加.svg');" title="批量导入无人机目标点"></button>
+                            <button id="lightButton" class = "roundbutton" style="background-image: url('..\\DATA\\svg\\灯.svg');" title="闪烁"></button>
+                            <button id="moveButton" class = "roundbutton" style="background-image: url('..\\DATA\\svg\\飞行.svg');" title="开始飞行"></button>
+                            <button id="createlandsurfaceButton" class = "roundbutton" style="background-image: url('..\\DATA\\svg\\面.svg');" title="导入降落面"></button>
+                            <button id="createEndPointButton" class = "roundbutton" style="background-image: url('..\\DATA\\svg\\终点.svg');" title="计算降落点"></button>
                         </div>
                     </div>
                 </div>

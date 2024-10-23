@@ -66,6 +66,9 @@ const chart_config = {
 const myChart = new Chart(ctx, chart_config);
 
 
+// 当前访问的无人机id
+var currentDroneId = 0;
+
 // 无人机类
 class Drone {
     constructor(droneobject, id, x, y, z) {
@@ -78,6 +81,7 @@ class Drone {
         this.targetX = x;
         this.targetY = y;
         this.targetZ = z;
+        this.shining = false;
     }
 
     // 方法，计算与输入点之间的路径坐标点
@@ -101,8 +105,18 @@ class Drone {
     }
 }
 
+// 移动目标类
+class MoveTarget {
+    constructor(targetobject, x, y, z) {
+        this.targetobject = targetobject;
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+}
+
 // 无人机列表
-const droneclasslist = {};
+const droneclassdict = {};
 
 // 添加无人机
 document.getElementById('addButton').addEventListener('click', () => {
@@ -120,13 +134,13 @@ document.getElementById('addButton').addEventListener('click', () => {
                 myBox = viewer.entities.add({
                     name: 'My 3D Box',
                     position: position,
-                    box: {
-                        dimensions: new Cesium.Cartesian3(1, 1, 0.2), // 盒子的尺寸
-                        material: Cesium.Color.RED.withAlpha(0.5), // 透明红色
+                    ellipsoid: {
+                        radii: new Cesium.Cartesian3(0.5, 0.5, 0.5), // 球体的半径（x, y, z）
+                        material: Cesium.Color.RED.withAlpha(0.5) // 初始颜色和透明度
                     }
                 });
                 const drone = new Drone(myBox, item.id, item.coordinates.x, item.coordinates.y, item.coordinates.z);
-                droneclasslist[item.id] = drone;
+                droneclassdict[item.id] = drone;
 
                 //添加二维无人机点
                 viewer2.entities.add({
@@ -148,7 +162,7 @@ document.getElementById('addButton').addEventListener('click', () => {
                     const pic_container = document.getElementById('sideContainer_buttom_drone_picture');
 
                     // 设置背景图片
-                    const imageUrl = 'https://raw.githubusercontent.com/ATFfang/publicWarehouse/main/drone.png';
+                    const imageUrl = '..\\DATA\\drone.png';
                     fetch(imageUrl)
                         .then(response => {
                             if (!response.ok) {
@@ -168,15 +182,14 @@ document.getElementById('addButton').addEventListener('click', () => {
                     const richTextBox = document.getElementById('sideContainer_buttom_drone_richTextBox');
                     richTextBox.innerHTML = ''
                     richTextBox.innerHTML = `
-                        <p>id: ${drone.id}</p>
-                        <p>x: ${drone.x}</p>
-                        <p>y: ${drone.y}</p>
-                        <p>z: ${drone.z}</p>
+                        <p style="margin: 0; line-height: 1;">id: ${drone.id}</p>
+                        <p style="margin: 0; line-height: 1;">x: ${drone.x}</p>
+                        <p style="margin: 0; line-height: 1;">y: ${drone.y}</p>
+                        <p style="margin: 0; line-height: 1;">z: ${drone.z}</p>
                         `;
 
                     // 获取id
-                    const inputIDField = document.getElementById('inputID');
-                    inputIDField.value = `${drone.id}`;
+                    currentDroneId = drone.id;
                     const inputXField = document.getElementById('inputX');
                     const inputYField = document.getElementById('inputY');
                     const inputZField = document.getElementById('inputZ');
@@ -199,7 +212,7 @@ document.getElementById('catchButton').addEventListener('click', () => {
 // 开始移动
 document.getElementById('moveButton').addEventListener('click', () => {
     
-    const values = Object.values(droneclasslist);
+    const values = Object.values(droneclassdict);
     values.forEach(value => {
         console.log(value); // 打印值
         const pathPoints = value.getPathTo(value.targetX, value.targetY, value.targetZ, 10);
@@ -231,8 +244,19 @@ document.getElementById('moveButton').addEventListener('click', () => {
                     drone.x = pathpoint.x;
                     drone.y = pathpoint.y;
                     drone.z = pathpoint.z;
+
+                    // 更新无人机状态栏
+                    if (currentDroneId == drone.id) {
+                        const richTextBox = document.getElementById('sideContainer_buttom_drone_richTextBox');
+                        richTextBox.innerHTML = `
+                            <p style="margin: 0; line-height: 1;">id: ${drone.id}</p>
+                            <p style="margin: 0; line-height: 1;">x: ${drone.x.toFixed(4)}</p>
+                            <p style="margin: 0; line-height: 1;">y: ${drone.y.toFixed(4)}</p>
+                            <p style="margin: 0; line-height: 1;">z: ${drone.z.toFixed(4)}</p>
+                            `;
+                    }
                     // 等待1秒（1000毫秒）再移动到下一个点
-                    await delay(1000);
+                    await delay(500);
                 }
                 resolve(); // 成功时解决 Promise
             } catch (error) {
@@ -279,21 +303,28 @@ document.getElementById('createlandsurfaceButton').addEventListener('click', () 
     }));
 })
 
-// 设置移动目标
-document.getElementById('settargetButton').addEventListener('click', () => {
-    const inputIDField = document.getElementById('inputID');
-    const inputXField = document.getElementById('inputX');
-    const inputYField = document.getElementById('inputY');
-    const inputZField = document.getElementById('inputZ');
+// // 设置移动目标
+// document.getElementById('settargetButton').addEventListener('click', () => {
+//     const inputXField = document.getElementById('inputX');
+//     const inputYField = document.getElementById('inputY');
+//     const inputZField = document.getElementById('inputZ');
 
-    droneclasslist[inputIDField.value].targetX = parseFloat(inputXField.value);
-    droneclasslist[inputIDField.value].targetY = parseFloat(inputYField.value);
-    droneclasslist[inputIDField.value].targetZ = parseFloat(inputZField.value);
-    console.log(droneclasslist);
-});
+//     droneclassdict[currentDroneId].targetX = parseFloat(inputXField.value);
+//     droneclassdict[currentDroneId].targetY = parseFloat(inputYField.value);
+//     droneclassdict[currentDroneId].targetZ = parseFloat(inputZField.value);
+//     console.log(droneclassdict);
+// });
 
 // 导入移动目标
 document.getElementById('loadtargetButton').addEventListener('click', () => {
+    //打开对话框
+    var endpointcontainer_maincontainer = document.getElementById("endpointcontainer_maincontainer");
+    endpointcontainer_maincontainer.style.display = "block"
+    var closeBtn = document.getElementById("close_endpointcontainer_maincontainer");
+    closeBtn.onclick = function() {
+        endpointcontainer_maincontainer.style.display = "none";
+    }
+
     fetch('..\\DATA\\dronetarget.json').then(response => {
         if (!response.ok) {
             throw new Error('Network response was not ok');
@@ -301,9 +332,9 @@ document.getElementById('loadtargetButton').addEventListener('click', () => {
         return response.json();
     }).then(data => {
         data.forEach(item => {
-            droneclasslist[item.id].targetX = item.coordinates.x;
-            droneclasslist[item.id].targetY = item.coordinates.y;
-            droneclasslist[item.id].targetZ = item.coordinates.z;
+            droneclassdict[item.id].targetX = item.coordinates.x;
+            droneclassdict[item.id].targetY = item.coordinates.y;
+            droneclassdict[item.id].targetZ = item.coordinates.z;
         })
     })
 });
@@ -331,6 +362,8 @@ function drawTable(height, label, chart) {
             backgroundColor: 'rgba(0, 123, 255, 0.2)',
             data: [],
             fill: false,
+            pointRadius: 2,
+            borderWidth: 1,
         };
         chart.data.datasets.push(dataset); // 将新数据集添加到数据集中
     }
@@ -338,3 +371,49 @@ function drawTable(height, label, chart) {
     dataset.data.push({ x: now, y: height });
     chart.update(); // 更新图表
 }
+
+// 设置终点
+document.getElementById('createEndPointButton').addEventListener('click', () => {
+
+    const endpoints = [];
+    for (let i = 0; i < Object.keys(droneclassdict).length; i++) {
+        // 随机生成x和y坐标在矩形范围内
+        const x = Math.random() * (121.4748 - 121.4746) + 121.4746;
+        const y = Math.random() * (31.2305 - 31.2303) + 31.2303;
+        endpoints.push([x, y]);
+    }
+
+    var n = 0;
+    // 将生成的坐标添加到drone类中
+    const values = Object.values(droneclassdict);
+    values.forEach(value => {
+        value.targetX = endpoints[n][0]
+        value.targetY = endpoints[n][1]
+        value.targetZ = 0
+        n++;
+    });
+});
+
+// 无人机闪烁
+document.getElementById('lightButton').addEventListener('click', () => {
+    const values = Object.values(droneclassdict);
+    values.forEach(drone => {
+        if(drone.shining){
+            drone.shining = false;
+            clearInterval(blinkInterval);
+        }
+        else{
+            let isVisible = true;
+            drone.shining = true;
+            const blinkInterval = setInterval(() => {
+                // 切换球体的透明度
+                if (isVisible) {
+                    drone.droneobject.ellipsoid.material = Cesium.Color.YELLOW.withAlpha(0.4); // 透明度较低
+                } else {
+                    drone.droneobject.ellipsoid.material = Cesium.Color.RED.withAlpha(0.8); // 透明度较高
+                }
+                isVisible = !isVisible; // 切换状态
+            }, 500); // 每500毫秒切换一次
+        }
+    });
+})

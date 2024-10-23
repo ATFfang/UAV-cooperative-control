@@ -18,7 +18,7 @@ body {
 
 #sideContainer {
     flex: 0.8;
-    background-color: rgba(213, 213, 213, 0.219);
+    background-color: rgba(255, 251, 243, 0.772);
     flex-direction: column;
     display: flex;
 }
@@ -26,7 +26,9 @@ body {
 #sideContainer_top {
     height: 4%;
     min-height: 40px;
-    border: 1px solid lightgray;
+    border: 1px solid rgb(255, 255, 255);
+    display: flex;
+    align-items: center;
 }
 
 #sideContainer_middle {
@@ -41,12 +43,16 @@ body {
     width:95%;
     margin-top:2.5%;
     border: 1px solid lightgray;
+    border-radius: 5px;
 }
 #sideContainer_middle_chart {
     height: 40%;
     width:95%;
     margin-top:2.5%;
+    overflow-x: auto;
+    overflow-y: auto;
     border: 1px solid lightgray;
+    border-radius: 5px;
 }
 
 #sideContainer_buttom {
@@ -61,25 +67,26 @@ body {
     /* 高度占父容器的60% */
     margin: 5% auto 0;
     /* 距上面5%，左右居中（auto） */
-    background-color: rgba(211, 211, 211, 0.288);
+    background-color: rgba(255, 254, 254, 0.655);
     /* 背景颜色用于可视化 */
     display: flex;
-    border: 1px solid black;
+    border: 1px solid rgba(182, 182, 182, 0.774);
     overflow-y: auto;
     /* 边框用于可视化 */
     border-radius: 5px;
     flex-wrap: wrap;
+    justify-content: center;
 }
 
 #sideContainer_buttom_drone {
     width: 90%;
     /* 宽度占父容器的90% */
-    height: 60%;
+    height: 35%;
     /* 高度占父容器的60% */
     margin: 5% auto 0;
-    background-color: rgba(211, 211, 211, 0.288);
+    background-color: rgba(182, 182, 182, 0.774);
     /* 背景颜色用于可视化 */
-    border: 1px solid black;
+    border: 1px solid rgba(255, 255, 255, 0.685);
     /* 边框用于可视化 */
     border-radius: 5px;
     overflow-y: auto;
@@ -89,45 +96,52 @@ body {
 }
 
 #sideContainer_buttom_drone_top{
-    height:40%;
+    height:75%;
     background-color: rgb(255, 255, 255);
     display: flex;
     flex-direction: row;
 }
 #sideContainer_buttom_drone_buttom{
-    height:60%;
+    height:25%;
     background-color: rgb(253, 253, 253);
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
 }
-#sideContainer_buttom_drone_buttom_left{
-    height:100%;
-    width: 50%;
+/* #sideContainer_buttom_drone_buttom_top{
+    flex:2;
+    width: 100%;
     display: flex;
-    flex-direction:column;
+    flex-direction:row;
     justify-content: center;
+    overflow-x: auto;
+    overflow-y: auto;
     align-items: flex-start;
     background-color: rgb(255, 255, 255);
-}
-#sideContainer_buttom_drone_buttom_right{
-    height:100%;
-    width: 40%;
+} */
+
+#sideContainer_buttom_drone_buttom_middle{
+    flex:1;
+    width: 100%;
     background-color: rgb(255, 254, 254);
+    display: flex;
+    align-items: center;
 }
+
 /* 无人机位置参数设定*/
 input {
     display: block;
     margin: 4% auto 0;
     padding: 8px;
-    width: 50%;
+    width: 25%;
     left: 10%;
     height: 10px;
+    min-width: 30px;
   }
 
 /* 无人机小方块*/
 .square {
-    width: 40px;
-    height: 40px;
+    width: 60px;
+    height: 30px;
     background-color: rgba(173, 216, 230, 0.18);
     margin: 10px;
     display: flex;
@@ -188,4 +202,11 @@ button {
     font-size: 20px;
     border: none;
     cursor: pointer;
+}
+
+/*图表*/
+.mychart {
+    width: 100% !important;
+    height: 100% !important;
+    background-color: #ffffff95;
 }
