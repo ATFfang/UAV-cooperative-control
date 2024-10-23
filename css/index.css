@@ -127,6 +127,26 @@ body {
     align-items: center;
 }
 
+#sideContainer_buttom_buttom{
+    width: 85% !important;
+    /* 宽度占父容器的90% */
+    height: 22.5% !important;
+    bottom: 5%;
+    /* 高度占父容器的60% */
+    margin: 2.5% auto 0;
+    background-color: rgba(255, 254, 254, 0.808);
+    /* 背景颜色用于可视化 */
+    border: 1px solid rgba(207, 207, 207, 0.685);
+    /* 边框用于可视化 */
+    border-radius: 5px;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    padding: 10px;
+    font-family: Arial, sans-serif;
+}
+
 /* 无人机位置参数设定*/
 input {
     display: block;

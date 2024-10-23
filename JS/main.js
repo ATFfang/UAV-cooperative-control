@@ -202,6 +202,8 @@ document.getElementById('addButton').addEventListener('click', () => {
                 });
             });
         })
+
+        addText("完成添加无人机")
     });
 
 // 捕捉到无人机
@@ -268,6 +270,7 @@ document.getElementById('moveButton').addEventListener('click', () => {
     async function moveAllDrones(droneList) {
         await Promise.all(droneList.map(drone => moveDrone(drone)));
     }
+    addText("开始移动")
 
     moveAllDrones(values);
 });
@@ -392,6 +395,8 @@ document.getElementById('createEndPointButton').addEventListener('click', () => 
         value.targetZ = 0
         n++;
     });
+
+    addText("终点已生成")
 });
 
 // 无人机闪烁
@@ -417,3 +422,10 @@ document.getElementById('lightButton').addEventListener('click', () => {
         }
     });
 })
+
+// 打印文字
+function addText(text){
+    var txtcontainer = document.getElementById('sideContainer_buttom_buttom');
+    txtcontainer.innerHTML += text +"<br>";
+    txtcontainer.scrollTop = txtcontainer.scrollHeight;
+}
