@@ -107,8 +107,9 @@ class Drone {
 
 // 移动目标类
 class MoveTarget {
-    constructor(targetobject, x, y, z) {
+    constructor(targetobject, id, x, y, z) {
         this.targetobject = targetobject;
+        this.id = id;
         this.x = x;
         this.y = y;
         this.z = z;
@@ -117,6 +118,8 @@ class MoveTarget {
 
 // 无人机列表
 const droneclassdict = {};
+// 移动目标列表
+const movetargetdict = {};
 
 // 添加无人机
 document.getElementById('addButton').addEventListener('click', () => {
@@ -187,18 +190,6 @@ document.getElementById('addButton').addEventListener('click', () => {
                         <p style="margin: 0; line-height: 1;">y: ${drone.y}</p>
                         <p style="margin: 0; line-height: 1;">z: ${drone.z}</p>
                         `;
-
-                    // 获取id
-                    currentDroneId = drone.id;
-                    const inputXField = document.getElementById('inputX');
-                    const inputYField = document.getElementById('inputY');
-                    const inputZField = document.getElementById('inputZ');
-                    inputXField.value = `${drone.x}`;
-                    inputYField.value = `${drone.y}`;
-                    inputZField.value = `${drone.z}`;
-
-                    // 设置无人机颜色
-                    drone.droneobject.box.material = Cesium.Color.BLUE.withAlpha(0.5)
                 });
             });
         })
@@ -347,7 +338,7 @@ function drawPath(path, V) {
     V.entities.add({
         polyline: {
             positions: path,
-            width: 2,
+            width: 0.5,
             material: Cesium.Color.RED // 路径颜色
         }
     });
@@ -375,7 +366,7 @@ function drawTable(height, label, chart) {
     chart.update(); // 更新图表
 }
 
-// 设置终点
+// 设置降落终点
 document.getElementById('createEndPointButton').addEventListener('click', () => {
 
     const endpoints = [];
@@ -423,9 +414,105 @@ document.getElementById('lightButton').addEventListener('click', () => {
     });
 })
 
+// 添加无人机运动目标点
+document.getElementById('addtargetButton').addEventListener('click', () => {
+    var handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+    var target = null;
+
+    // 监听鼠标左键点击事件
+    handler.setInputAction(function(click) {
+        // 获取点击位置的屏幕坐标
+        var pickedPosition = viewer.scene.pickPosition(click.position);
+        
+        if (Cesium.defined(pickedPosition)) {
+            // 将屏幕坐标转换为地理坐标（经纬度和高度）
+            var cartographic = Cesium.Ellipsoid.WGS84.cartesianToCartographic(pickedPosition);
+
+            // 获取经度、纬度和高度
+            var longitude = Cesium.Math.toDegrees(cartographic.longitude);
+            var latitude = Cesium.Math.toDegrees(cartographic.latitude);
+            var height = cartographic.height;
+
+            // 输出坐标
+            // console.log('经度:', longitude, '纬度:', latitude, '高度:', height);
+            const position = Cesium.Cartesian3.fromDegrees(longitude, latitude, height)
+            myTarget = viewer.entities.add({
+                name: 'myTarget',
+                position: position,
+                ellipsoid: {
+                    radii: new Cesium.Cartesian3(0.5, 0.5, 0.5), // 球体的半径（x, y, z）
+                    material: Cesium.Color.YELLOW.withAlpha(0.5) // 初始颜色和透明度
+                }
+            });
+
+            target = new MoveTarget(myTarget, 0, longitude, latitude, height)
+            console.log(target)
+
+            moveTargetpoint(target)
+
+        } else {
+            console.log('点击位置无效');
+        }
+    }, Cesium.ScreenSpaceEventType.LEFT_CLICK)
+
+})
+
 // 打印文字
 function addText(text){
     var txtcontainer = document.getElementById('sideContainer_buttom_buttom');
     txtcontainer.innerHTML += text +"<br>";
     txtcontainer.scrollTop = txtcontainer.scrollHeight;
+}
+
+//上下移动目标点
+function moveTargetpoint(target){
+    // 定义移动速度（每秒5米）
+    var moveSpeed = 5; // 每秒移动5米
+    var moveUp = false;
+    var moveDown = false;
+
+    // 处理实体位置更新
+    function updatePosition() {
+        // 获取当前高度
+        var height = target.z;
+
+        // 根据键盘按键状态更新高度
+        if (moveUp) {
+            height += moveSpeed / 60; // 每帧移动5米/秒的1/60
+        }
+        if (moveDown) {
+            height -= moveSpeed / 60; // 每帧移动5米/秒的1/60
+        }
+
+        // 防止高度小于地面
+        if (height < 0) {
+            height = 0;
+        }
+
+        // 更新实体位置
+        target.targetobject.position = Cesium.Cartesian3.fromDegrees(target.x, target.y, height);
+    }
+
+    // 监听键盘按下事件
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'ArrowUp') {
+            moveUp = true;
+        }
+        if (event.key === 'ArrowDown') {
+            moveDown = true;
+        }
+    });
+
+    // 监听键盘松开事件
+    document.addEventListener('keyup', function(event) {
+        if (event.key === 'ArrowUp') {
+            moveUp = false;
+        }
+        if (event.key === 'ArrowDown') {
+            moveDown = false;
+        }
+    });
+
+    // 启动位置更新循环
+    updatePosition();
 }
