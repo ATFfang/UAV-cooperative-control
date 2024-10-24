@@ -1,7 +1,7 @@
 #endpointcontainer_maincontainer {
     display: none; /* 默认隐藏 */
     width: 10%;
-    height: 25%;
+    height: 20%;
     position: absolute;
     bottom: 1%;
     right: 22%;
@@ -36,21 +36,26 @@
     margin-right: auto;
     margin-top: 22.5%;
     background-color: rgba(255, 255, 255, 0);
-    border: 1px solid rgba(233, 233, 233, 0.894);
+    border: 0px solid rgba(233, 233, 233, 0.894);
     display: flex;
     flex-direction:row;
     justify-content: center;
 }
 
-#endpointcontainer_maincontainer_addjson{
+#endpointcontainer_maincontainer_control{
     width: 90%;
-    height: 40% !important;
+    height: 45% !important;
     margin-left: auto;
     margin-right: auto;
     margin-top: 5%;
     background-color: rgba(255, 255, 255, 0);
     border: 1px solid rgba(233, 233, 233, 0.894);
     border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow-y: auto;
 }
 
 .endpointcontainer_roundbutton {
@@ -65,4 +70,53 @@
     color: white;
     border: none;
     cursor: pointer;
+}
+
+.control-row {
+    flex:1;
+    display: flex;
+    justify-content: center;
+    margin: 5px 0;
+}
+
+.control-btn {
+    width: 20px;
+    height: 20px;
+    background-color: #f0f0f0;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;  /* 垂直居中 */
+    justify-content: center;  /* 水平居中 */
+}
+
+/* 鼠标悬停样式 */
+.control-btn:hover {
+    background-color: #ddd;
+}
+
+/* 特定按钮颜色 */
+.control-btn.up {
+    background-color: #f1f8ff;
+}
+
+.control-btn.down {
+    background-color: #f1f8ff;
+}
+
+.control-btn.left {
+    background-color: #f1f8ff;
+}
+
+.control-btn.right {
+    background-color: #f1f8ff;
+}
+
+/* 鼠标按下时的效果 */
+.control-btn:active {
+    background-color: #aaa;
 }

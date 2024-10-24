@@ -119,6 +119,7 @@ class MoveTarget {
 // 无人机列表
 const droneclassdict = {};
 // 移动目标列表
+var moveTarget = null
 const movetargetdict = {};
 
 // 添加无人机
@@ -319,18 +320,18 @@ document.getElementById('loadtargetButton').addEventListener('click', () => {
         endpointcontainer_maincontainer.style.display = "none";
     }
 
-    fetch('..\\DATA\\dronetarget.json').then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    }).then(data => {
-        data.forEach(item => {
-            droneclassdict[item.id].targetX = item.coordinates.x;
-            droneclassdict[item.id].targetY = item.coordinates.y;
-            droneclassdict[item.id].targetZ = item.coordinates.z;
-        })
-    })
+    // fetch('..\\DATA\\dronetarget.json').then(response => {
+    //     if (!response.ok) {
+    //         throw new Error('Network response was not ok');
+    //     }
+    //     return response.json();
+    // }).then(data => {
+    //     data.forEach(item => {
+    //         droneclassdict[item.id].targetX = item.coordinates.x;
+    //         droneclassdict[item.id].targetY = item.coordinates.y;
+    //         droneclassdict[item.id].targetZ = item.coordinates.z;
+    //     })
+    // })
 });
 
 // 绘制移动路径
@@ -446,12 +447,12 @@ document.getElementById('addtargetButton').addEventListener('click', () => {
             });
 
             target = new MoveTarget(myTarget, 0, longitude, latitude, height)
-            console.log(target)
+            moveTarget = target;
 
-            moveTargetpoint(target)
-
+            handler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_CLICK);
+            addText("标定目标点");
         } else {
-            console.log('点击位置无效');
+            addText("标定目标点无效");
         }
     }, Cesium.ScreenSpaceEventType.LEFT_CLICK)
 
@@ -464,55 +465,177 @@ function addText(text){
     txtcontainer.scrollTop = txtcontainer.scrollHeight;
 }
 
-//上下移动目标点
-function moveTargetpoint(target){
-    // 定义移动速度（每秒5米）
-    var moveSpeed = 5; // 每秒移动5米
-    var moveUp = false;
-    var moveDown = false;
+//#region 无人机目标点移动
 
-    // 处理实体位置更新
-    function updatePosition() {
-        // 获取当前高度
-        var height = target.z;
-
-        // 根据键盘按键状态更新高度
-        if (moveUp) {
-            height += moveSpeed / 60; // 每帧移动5米/秒的1/60
+//x左移动目标点
+var moveInterval;
+document.getElementById("control-btn-left-x").addEventListener('mouseenter', function() {
+    moveInterval = setInterval(function() {
+        if(moveTarget != null){
+            // 执行目标对象的移动操作
+            moveTarget.x += 0.000005;
+            moveTarget.targetobject.position = Cesium.Cartesian3.fromDegrees(moveTarget.x, moveTarget.y, moveTarget.z);
         }
-        if (moveDown) {
-            height -= moveSpeed / 60; // 每帧移动5米/秒的1/60
-        }
+    }, 100);  // 每0.2秒执行一次
+});
+// 当鼠标离开按钮时停止移动
+document.getElementById("control-btn-left-x").addEventListener('mouseleave', function() {
+    clearInterval(moveInterval);  // 清除定时器
+});
 
-        // 防止高度小于地面
-        if (height < 0) {
-            height = 0;
+//x右移动目标点
+var moveInterval;
+document.getElementById("control-btn-right-x").addEventListener('mouseenter', function() {
+    moveInterval = setInterval(function() {
+        if(moveTarget != null){
+            // 执行目标对象的移动操作
+            moveTarget.x -= 0.000005; 
+            moveTarget.targetobject.position = Cesium.Cartesian3.fromDegrees(moveTarget.x, moveTarget.y, moveTarget.z);
         }
+    }, 100);  // 每0.2秒执行一次
+});
+// 当鼠标离开按钮时停止移动
+document.getElementById("control-btn-right-x").addEventListener('mouseleave', function() {
+    clearInterval(moveInterval);  // 清除定时器
+});
 
-        // 更新实体位置
-        target.targetobject.position = Cesium.Cartesian3.fromDegrees(target.x, target.y, height);
+//y左移动目标点
+var moveInterval;
+document.getElementById("control-btn-left-y").addEventListener('mouseenter', function() {
+    moveInterval = setInterval(function() {
+        if(moveTarget != null){
+            // 执行目标对象的移动操作
+            moveTarget.y += 0.000005;
+            moveTarget.targetobject.position = Cesium.Cartesian3.fromDegrees(moveTarget.x, moveTarget.y, moveTarget.z);
+        }
+    }, 100);  // 每0.2秒执行一次
+});
+// 当鼠标离开按钮时停止移动
+document.getElementById("control-btn-left-y").addEventListener('mouseleave', function() {
+    clearInterval(moveInterval);  // 清除定时器
+});
+
+//y右移动目标点
+var moveInterval;
+document.getElementById("control-btn-right-y").addEventListener('mouseenter', function() {
+    moveInterval = setInterval(function() {
+        if(moveTarget != null){
+            // 执行目标对象的移动操作
+            moveTarget.y -= 0.000005; 
+            moveTarget.targetobject.position = Cesium.Cartesian3.fromDegrees(moveTarget.x, moveTarget.y, moveTarget.z);
+        }    
+    }, 100);  // 每0.2秒执行一次
+});
+// 当鼠标离开按钮时停止移动
+document.getElementById("control-btn-right-y").addEventListener('mouseleave', function() {
+    clearInterval(moveInterval);  // 清除定时器
+});
+
+//z上移动目标点
+var moveInterval;
+document.getElementById("control-btn-up").addEventListener('mouseenter', function() {
+    moveInterval = setInterval(function() {
+        if(moveTarget != null){
+            // 执行目标对象的移动操作
+            moveTarget.z += 0.5;  
+            moveTarget.targetobject.position = Cesium.Cartesian3.fromDegrees(moveTarget.x, moveTarget.y, moveTarget.z);
+        }
+    }, 100);  // 每0.2秒执行一次
+});
+// 当鼠标离开按钮时停止移动
+document.getElementById("control-btn-up").addEventListener('mouseleave', function() {
+    clearInterval(moveInterval);  // 清除定时器
+});
+
+//z下移动目标点
+var moveInterval;
+document.getElementById("control-btn-down").addEventListener('mouseenter', function() {
+    moveInterval = setInterval(function() {
+        if(moveTarget != null){
+            // 执行目标对象的移动操作
+            moveTarget.z -= 0.5; 
+            if(moveTarget.z < 0){
+                moveTarget.z = 0;
+            }
+            moveTarget.targetobject.position = Cesium.Cartesian3.fromDegrees(moveTarget.x, moveTarget.y, moveTarget.z);
+        }
+    }, 100);  // 每0.2秒执行一次
+});
+// 当鼠标离开按钮时停止移动
+document.getElementById("control-btn-down").addEventListener('mouseleave', function() {
+    clearInterval(moveInterval);  // 清除定时器
+});
+
+//#endregion 无人机目标点移动
+
+// 清除无人机运动目标点
+document.getElementById('cleantargetButton').addEventListener('click', () => {
+    viewer.entities.remove(moveTarget.targetobject);
+    moveTarget = null
+})
+
+// 开始像设定的目标点移动
+document.getElementById('movetotargetButton').addEventListener('click', () => {
+    
+    const values = Object.values(droneclassdict);
+    values.forEach(value => {
+        value.targetX = moveTarget.x;
+        value.targetY = moveTarget.y;
+        value.targetZ = moveTarget.z;
+        const pathPoints = value.getPathTo(value.targetX, value.targetY, value.targetZ, 10);
+        value.path = pathPoints;
+    });
+
+    function delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms)); // 返回一个延迟的 Promise
     }
 
-    // 监听键盘按下事件
-    document.addEventListener('keydown', function(event) {
-        if (event.key === 'ArrowUp') {
-            moveUp = true;
-        }
-        if (event.key === 'ArrowDown') {
-            moveDown = true;
-        }
-    });
+    async function moveDrone(drone) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                var dronepath = drone.path;
+                // 使用 for...of 循环逐个更新无人机位置
+                for (const pathpoint of dronepath) {
+                    drone.droneobject.position = Cesium.Cartesian3.fromDegrees(pathpoint.x, pathpoint.y, pathpoint.z);
+                    // console.log(drone.id + " has moved to " + pathpoint.x + ", " + pathpoint.y + ", " + pathpoint.z);
 
-    // 监听键盘松开事件
-    document.addEventListener('keyup', function(event) {
-        if (event.key === 'ArrowUp') {
-            moveUp = false;
-        }
-        if (event.key === 'ArrowDown') {
-            moveDown = false;
-        }
-    });
+                    // 在小地图上绘制路径
+                    var path = [Cesium.Cartesian3.fromDegrees(drone.x, drone.y),
+                        Cesium.Cartesian3.fromDegrees(pathpoint.x, pathpoint.y)]
+                    drawPath(path, viewer2)
 
-    // 启动位置更新循环
-    updatePosition();
-}
+                    // 再表上跟新高度
+                    drawTable(pathpoint.z, drone.id, myChart)
+
+                    // 更新位置
+                    drone.x = pathpoint.x;
+                    drone.y = pathpoint.y;
+                    drone.z = pathpoint.z;
+
+                    // 更新无人机状态栏
+                    if (currentDroneId == drone.id) {
+                        const richTextBox = document.getElementById('sideContainer_buttom_drone_richTextBox');
+                        richTextBox.innerHTML = `
+                            <p style="margin: 0; line-height: 1;">id: ${drone.id}</p>
+                            <p style="margin: 0; line-height: 1;">x: ${drone.x.toFixed(4)}</p>
+                            <p style="margin: 0; line-height: 1;">y: ${drone.y.toFixed(4)}</p>
+                            <p style="margin: 0; line-height: 1;">z: ${drone.z.toFixed(4)}</p>
+                            `;
+                    }
+                    // 等待1秒（1000毫秒）再移动到下一个点
+                    await delay(500);
+                }
+                resolve(); // 成功时解决 Promise
+            } catch (error) {
+                reject(error); // 出现错误时拒绝 Promise
+            }
+        });
+    }
+
+    async function moveAllDrones(droneList) {
+        await Promise.all(droneList.map(drone => moveDrone(drone)));
+    }
+    addText("开始移动")
+
+    moveAllDrones(values);
+});

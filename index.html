@@ -18,8 +18,20 @@
                 <div id = "endpointcontainer_maincontainer_buttoncontainer">
                     <button id="addtargetButton" class = "endpointcontainer_roundbutton" style="background-image: url('..\\DATA\\svg\\加.svg');" title="批量导入无人机目标点"></button>
                     <button id="cleantargetButton" class = "endpointcontainer_roundbutton" style="background-image: url('..\\DATA\\svg\\清除.svg');" title="清除目标点"></button>
+                    <button id="movetotargetButton" class = "endpointcontainer_roundbutton" style="background-image: url('..\\DATA\\svg\\飞行.svg');" title="开始飞行"></button>
                 </div>
-                <div id = "endpointcontainer_maincontainer_addjson"></div>
+                <div id = "endpointcontainer_maincontainer_control">
+                    <div class="control-row">
+                        <button class="control-btn left" id = "control-btn-left-x">x←</button>
+                        <button class="control-btn up" id = "control-btn-up">z↑</button>
+                        <button class="control-btn right" id = "control-btn-right-x">x→</button>
+                    </div>
+                    <div class="control-row">
+                        <button class="control-btn left" id = "control-btn-left-y">y←</button>
+                        <button class="control-btn down" id = "control-btn-down">z↓</button>
+                        <button class="control-btn right" id = "control-btn-right-y">y→</button>
+                    </div>
+                </div>
             </div>
         </div>
         <div id="sideContainer">
