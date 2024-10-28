@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask Streaming JSON</title>
+</head>
+<body>
+    <h1>Streaming JSON Data</h1>
+    <div id="data-container"></div>
+
+    <script>
+        // 创建与Flask SSE API的连接
+        const eventSource = new EventSource('http://127.0.0.1:5000/stream');
+
+        // 每当服务器发送JSON数据时，触发此函数
+        eventSource.onmessage = function(event) {
+            // 将数据解析为JSON
+            const data = JSON.parse(event.data);
+            console.log("Received data:", data);
+
+            // 打印到页面中
+            const dataContainer = document.getElementById('data-container');
+            dataContainer.innerHTML = `<p>Message: ${data.message}</p><p>Timestamp: ${data.timestamp}</p>`;
+        };
+    </script>
+</body>
+</html>
