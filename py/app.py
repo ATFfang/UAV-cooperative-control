@@ -26,10 +26,12 @@ def stream():
 
 @app.route('/streamjson')
 def streamjson():
-    def generate():
+    timestep = request.args.get('timestep', default=0.2)
+    timestep = float(timestep)
+    def generate(timestep):
         while True:
             jsondata = {
-                "id": "unique_identifier",
+                "id": 1,
                 "timestamp": time.time(),
                 "baseinfo": {
                     "Dradius": 100.0,
@@ -55,9 +57,9 @@ def streamjson():
             }
             # 使用SSE格式流传输数据
             yield f"data: {json.dumps(jsondata)}\n\n"
-            time.sleep(0.2)  # 模拟数据间隔
+            time.sleep(timestep)  # 模拟数据间隔
 
-    return Response(stream_with_context(generate()), content_type='text/event-stream')
+    return Response(stream_with_context(generate(timestep)), content_type='text/event-stream')
 
 # 定义一个路由，接收 POST 请求的 JSON 数据
 @app.route('/endpoint', methods=['POST'])
