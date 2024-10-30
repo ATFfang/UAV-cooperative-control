@@ -32,7 +32,7 @@ function fetchJSONData_Moveto(timestep) {
 }
 
 // post无人机状态json至后端
-function postJSONData(message) {
+function postJSONData(droneclassdict) {
     api = TotalAPI + `endpoint`;
 
     fetch(api, {
@@ -40,7 +40,7 @@ function postJSONData(message) {
         headers: {
             'Content-Type': 'application/json'
         },
-        body: message  // 将消息封装为JSON
+        body: constructionJSONData(droneclassdict)  // 将消息封装为JSON
     })
         .then(response => response.json())
         .then(data => {
@@ -51,11 +51,54 @@ function postJSONData(message) {
 }
 
 // Drone -> json构建函数
-function constructionJSONData(drone) {
-    
+function constructionJSONData(droneclassdict) {
+    const dronejsonarray = [];
+    const dronelist = Object.values(droneclassdict)
+    dronelist.forEach(drone => {
+        let dronejsonobject = {
+            "id": drone.id,
+            "timestamp": new Date().toISOString(),
+            "baseinfo": {
+                "Dradius": drone.Dradius,
+                "CAradius": drone.CAradius,
+                "maxspeed": drone.maxspeed,
+                "maxturnrate": drone.maxturnrate
+            },
+            "geometry": {
+                "x": drone.x,
+                "y": drone.y,
+                "z": drone.z
+            },
+            "target":{
+                "targetx": drone.targetX,
+                "targety": drone.targetY,
+                "targetz": drone.targetZ
+            },
+            "statusinfo": {
+                "speed": drone.speed,
+                "turnrate": drone.turnrate,
+                "ifarrival": drone.ifarrival
+            }
+        }
+
+        dronejsonarray.push(dronejsonobject)
+    });
+
+    const jsonString = JSON.stringify(dronejsonarray);
+    return jsonString;
 }
 
 // json -> Drone解构函数
-function deconstructionJSONData(json) {
-    
+function deconstructionJSONData(json, droneclassdict) {
+    json.forEach(dronejsonobject => {
+        drone = droneclassdict[dronejsonobject.id];
+
+        drone.nextx = dronejsonobject.nextstep.nx;
+        drone.nexty = dronejsonobject.nextstep.ny;
+        drone.nextz = dronejsonobject.nextstep.nz;
+        
+        drone.speed = dronejsonobject.statusinfo.speed;
+        drone.turnrate = dronejsonobject.statusinfo.turnrate;
+        drone.ifarrival = dronejsonobject.statusinfo.ifarrival;
+    })
 }
