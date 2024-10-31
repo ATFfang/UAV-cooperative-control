@@ -91,7 +91,7 @@ function constructionJSONData(droneclassdict) {
 // json -> Drone解构函数
 function deconstructionJSONData(json, droneclassdict) {
     json.forEach(dronejsonobject => {
-        drone = droneclassdict[dronejsonobject.id];
+        let drone = droneclassdict[dronejsonobject.id];
 
         drone.nextx = dronejsonobject.nextstep.nx;
         drone.nexty = dronejsonobject.nextstep.ny;
