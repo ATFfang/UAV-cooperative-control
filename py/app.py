@@ -2,12 +2,26 @@ from flask import Flask, Response, request, jsonify, stream_with_context
 import time
 import json
 from flask_cors import CORS
+import socket
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
 
 global sendmessage
 sendmessage = 0
+
+
+def get_local_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # 不需要实际连接外部服务器，只需获取地址
+        s.connect(("8.8.8.8", 80))  # 连接到 Google Public DNS
+        local_ip = s.getsockname()[0]
+    except Exception:
+        local_ip = '127.0.0.1'  # 若获取失败，则使用回环地址
+    finally:
+        s.close()
+    return local_ip
 
 # SSE 生成器函数
 def generate_json():
@@ -63,4 +77,5 @@ def receive_data():
     return jsonify({'message': 'Data received successfully!'})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+
+    app.run(host=get_local_ip(), port=5000, debug=True)
