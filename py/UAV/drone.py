@@ -98,7 +98,6 @@ class UAV:
 
         return total_repulsion
     
-
 # 检测两架无人机之间的距离
 def check_distances(drones, min_distance=10.0):
     for i in range(len(drones)):
@@ -158,10 +157,6 @@ def simulate(input_json, time_step=1, steps=10):
         all_results.append(result)
 
     return all_results
-        # yield f"data: {json.dumps(result)}\n\n"
-        # print(1)
-        # # 暂停以模拟每秒生成一个文件
-        # time.sleep(time_step)
 
 if "__name__" == "__main__":
     simulate("drones.json", time_step=1, steps=10)

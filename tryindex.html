@@ -27,6 +27,32 @@
             dataContainer.innerHTML = `<p>Message: ${data.message}</p>`;
         };
 
+        // 一个持续接受后端数据的生成器函数
+        function createMessageGenerator(url) {
+            // 定义生成器函数
+            function* messageGenerator() {
+                while (true) {
+                    const message = yield;  // 暂停并等待新消息
+                    console.log("Received message:", message);
+                }
+            }
+
+            // 创建生成器实例
+            const gen = messageGenerator();
+            gen.next();  // 初始化生成器
+
+            // 创建 EventSource 连接
+            const eventSource = new EventSource(url);
+
+            // 设置 EventSource 的 onmessage 处理函数
+            eventSource.onmessage = function (event) {
+                const data = JSON.parse(event.data);  // 解析接收到的消息
+                gen.next(data);  // 将数据传递给生成器
+            };
+
+            return gen;  // 返回生成器实例
+        }
+
         // 添加键盘事件监听器
         document.getElementById('input-box').addEventListener('keydown', function (event) {
             if (event.key === 'Enter') {

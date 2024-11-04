@@ -538,6 +538,9 @@ document.getElementById('movetotargetButton').addEventListener('click', () => {
         value.targetZ = moveTarget.z;
     });
 
+    // postJSONData(values);
+    // fetchJSONData_Moveto(0.5)
+
     // 创建用于移动无人机的函数
     function moveDrone(drone, totalMoveTime) {
         const startX = drone.x;
