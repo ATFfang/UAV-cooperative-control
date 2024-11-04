@@ -14,7 +14,7 @@
 
     <script>
         // 创建与Flask SSE API的连接
-        const eventSource = new EventSource('http://127.0.0.1:5000/stream');
+        const eventSource = new EventSource('http://192.168.41.166:5000/stream');
 
         // 每当服务器发送JSON数据时，触发此函数
         eventSource.onmessage = function (event) {
@@ -30,10 +30,34 @@
         // 添加键盘事件监听器
         document.getElementById('input-box').addEventListener('keydown', function (event) {
             if (event.key === 'Enter') {
-                const message = event.target.value;  // 获取输入框的值
+                message = [{
+                    "id": 1,
+                    "timestamp": new Date().toISOString(),
+                    "baseinfo": {
+                        "Dradius": 0.2,
+                        "CAradius": 20,
+                        "maxspeed": 10,
+                        "maxturnrate": 30
+                    },
+                    "geometry": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                    },
+                    "target": {
+                        "targetx": 9,
+                        "targety": 9,
+                        "targetz": 9
+                    },
+                    "statusinfo": {
+                        "speed": 0,
+                        "turnrate": 0,
+                        "ifarrival": 0
+                    }
+                }]
 
                 // 发送数据到后端
-                fetch('http://127.0.0.1:5000/endpoint', {
+                fetch('http://192.168.41.166:5000/endpoint', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

@@ -3,12 +3,13 @@ import time
 import json
 from flask_cors import CORS
 import socket
+from UAV import simulate
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
 
 global sendmessage
-sendmessage = 0
+sendmessage = None
 
 
 def get_local_ip():
@@ -25,39 +26,18 @@ def get_local_ip():
 
 # SSE 生成器函数
 def generate_json():
-    while True:
-        # 创建要发送的JSON数据
-        global sendmessage
+    # 创建要发送的JSON数据
+    global sendmessage
+    
+    if(sendmessage):
+        data_list = simulate(sendmessage)
 
-        data = [{"id": 1, 
-                "timestamp": time.time(),
-                "statusinfo": {
-                    "speed": 10.0,
-                    "turnrate": 45.0,
-                    "ifarrival": 0,
-                },
-                "nextstep": {
-                    "nx": 121.4737,
-                    "ny": 31.2304,
-                    "nz": 10.0
-                }
-            },
-            {"id": 2, 
-                "timestamp": time.time(),
-                "statusinfo": {
-                    "speed": 10.0,
-                    "turnrate": 45.0,
-                    "ifarrival": 0,
-                },
-                "nextstep": {
-                    "nx": 121.4737,
-                    "ny": 31.2304,
-                    "nz": 10.0
-                }
-            }]
-        # 将数据转换为SSE格式，并每0.5秒发送一次
-        yield f"data: {json.dumps(data)}\n\n"
-        time.sleep(1)
+        for data in data_list:
+            yield f"data: {json.dumps(data)}\n\n"
+            time.sleep(0.5)
+
+    sendmessage = None
+    return
 
 @app.route('/stream')
 def stream():
@@ -72,7 +52,7 @@ def receive_data():
 
     global sendmessage
     sendmessage = data["message"]
-
+    
     # 返回响应
     return jsonify({'message': 'Data received successfully!'})
 
