@@ -1,25 +1,30 @@
 // 无人机类
 class Drone {
-    constructor(droneobject, id, x, y, z) {
+    constructor(id, x, y, z) {
         this.x = x; // X坐标
         this.y = y; // Y坐标
         this.z = z; // Z坐标
-        this.droneobject = droneobject;
-        this.path = null;
+        this.droneobject = null;
         this.id = id
         this.targetX = x;
         this.targetY = y;
         this.targetZ = z;
         this.shining = false;
+        this.Dradius = 0.2;
+        this.CAradius = 10;
+        this.maxspeed = 10;
+        this.maxturnrate = 20;
+        this.speed = 0;
+        this.turnrate = 0;
+        this.ifarrival = 0;
     }
 }
 
-const TotalAPI = 'http://127.0.0.1:5000/';
+const TotalAPI = 'http://192.168.41.166:5000/';
 
 // 获取指引无人机飞行位置的流json数据
-function fetchJSONData_Moveto(timestep) {
-    timestep = parseFloat(timestep);
-    api = TotalAPI + `streamjson?timestep=${timestep}`;
+function fetchJSONData_Moveto() {
+    api = TotalAPI + `streamjson`;
     const eventSource = new EventSource(api);
 
     eventSource.onmessage = function (event) {
@@ -34,13 +39,13 @@ function fetchJSONData_Moveto(timestep) {
 // post无人机状态json至后端
 function postJSONData(droneclassdict) {
     api = TotalAPI + `endpoint`;
-
+    
     fetch(api, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: constructionJSONData(droneclassdict)  // 将消息封装为JSON
+        body: JSON.stringify({ message: constructionJSONData(droneclassdict) })  // 将消息封装为JSON
     })
         .then(response => response.json())
         .then(data => {

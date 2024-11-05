@@ -110,7 +110,9 @@ def check_distances(drones, min_distance=10.0):
 
 def simulate(input_json, time_step=1, steps=10):
     
-    data = input_json
+    data = json.loads(input_json)
+
+    print(type(data))    
     drones = []
     for drone_data in data:
         # 初始化无人机属性

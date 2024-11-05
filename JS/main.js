@@ -68,20 +68,27 @@ const myChart = new Chart(ctx, chart_config);
 
 // 当前访问的无人机id
 var currentDroneId = 0;
-// 无人机类
-class Drone {
-    constructor(id, x, y, z) {
-        this.x = x; // X坐标
-        this.y = y; // Y坐标
-        this.z = z; // Z坐标
-        this.droneobject = null;
-        this.id = id
-        this.targetX = x;
-        this.targetY = y;
-        this.targetZ = z;
-        this.shining = false;
-    }
-}
+// // 无人机类
+// class Drone {
+//     constructor(id, x, y, z) {
+//         this.x = x; // X坐标
+//         this.y = y; // Y坐标
+//         this.z = z; // Z坐标
+//         this.droneobject = null;
+//         this.id = id
+//         this.targetX = x;
+//         this.targetY = y;
+//         this.targetZ = z;
+//         this.shining = false;
+//         this.Dradius = 0.2;
+//         this.CAradius = 10;
+//         this.maxspeed = 10;
+//         this.maxturnrate = 20;
+//         this.speed = 0;
+//         this.turnrate = 0;
+//         this.ifarrival = 0;
+//     }
+// }
 
 // 移动目标类
 class MoveTarget {
@@ -538,8 +545,9 @@ document.getElementById('movetotargetButton').addEventListener('click', () => {
         value.targetZ = moveTarget.z;
     });
 
-    // postJSONData(values);
-    // fetchJSONData_Moveto(0.5)
+    // post无人机状态到后端
+    postJSONData(values);
+    fetchJSONData_Moveto();
 
     // 创建用于移动无人机的函数
     function moveDrone(drone, totalMoveTime) {

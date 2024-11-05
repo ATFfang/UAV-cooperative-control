@@ -39,7 +39,7 @@ def generate_json():
     sendmessage = None
     return
 
-@app.route('/stream')
+@app.route('/streamjson')
 def stream():
     # 使用SSE流传输数据
     return Response(generate_json(), mimetype='text/event-stream')
