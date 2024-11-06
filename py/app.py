@@ -4,7 +4,9 @@ import json
 from flask_cors import CORS
 import socket
 from UAV import simulate
+import warnings
 
+warnings.filterwarnings("ignore", category=FutureWarning)
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
 

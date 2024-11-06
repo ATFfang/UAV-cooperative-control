@@ -40,6 +40,8 @@ function fetchJSONData_Moveto() {
 function postJSONData(droneclassdict) {
     api = TotalAPI + `endpoint`;
     
+    console.log(JSON.stringify({ message: constructionJSONData(droneclassdict) }))
+    
     fetch(api, {
         method: 'POST',
         headers: {

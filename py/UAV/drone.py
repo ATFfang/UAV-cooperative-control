@@ -1,10 +1,13 @@
 import numpy as np
 import time
 import json
-import geopy
+from pyproj import Proj,transform
 
 # 定义三维向量，表示位置坐标及高度
-def vec3(x, y, z):
+def vec3(lon, lat, z):
+    input_proj = Proj(init = 'epsg:4326')   #wgs84坐标
+    output_proj = Proj(init = 'epsg:3857')  #web墨卡托投影坐标
+    x,y = transform(input_proj,output_proj,lon,lat)
     return np.array([x, y, z], dtype=np.float64)
 
 # 计算向量长度
@@ -134,12 +137,19 @@ def simulate(input_json, time_step=1, steps=10):
 
     # 设定目标位置
     target_positions = [vec3(d["target"]["targetx"], d["target"]["targety"], d["target"]["targetz"]) for d in data]
+    print(target_positions)  
+    input_proj = Proj(init='epsg:3857')  # 墨卡托投影
+    output_proj = Proj(init='epsg:4326')  # WGS84地理坐标
     
     all_results = []
     for step in range(steps):
         result = []
         for i, drone in enumerate(drones):
             drone.update(time_step, target_positions[i], drones)
+
+            lon, lat = transform(input_proj, output_proj, drone.position[0], drone.position[1])
+            altitude = drone.position[2]
+
             drone_data = {
                 "id": data[i]["id"],
                 "timestamp": step + 1,  # 将timestamp设置为秒数
@@ -149,13 +159,13 @@ def simulate(input_json, time_step=1, steps=10):
                     "ifarrival": int(drone.reached_target)
                 },
                 "nextstep": {
-                    "nx": drone.position[0],
-                    "ny": drone.position[1],
-                    "nz": drone.position[2]
+                    "nx": lon,
+                    "ny": lat,
+                    "nz": altitude
                 }
             }
             result.append(drone_data)
-
+        print(result[0])    
         all_results.append(result)
 
     return all_results
