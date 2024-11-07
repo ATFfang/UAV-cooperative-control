@@ -6,9 +6,9 @@ class Drone {
         this.z = z; // Z坐标
         this.droneobject = null;
         this.id = id
-        this.targetX = x;
-        this.targetY = y;
-        this.targetZ = z;
+        this.targetX = [];
+        this.targetY = [];
+        this.targetZ = [];
         this.shining = false;
         this.Dradius = 0.2;
         this.CAradius = 10;
@@ -18,20 +18,56 @@ class Drone {
         this.turnrate = 0;
         this.ifarrival = 0;
     }
+
+    enqueue(x, y, z) {
+        this.targetX.push(x);
+        this.targetY.push(y);
+        this.targetZ.push(z);
+    }
+
+    dequeue() {
+        if (this.isEmpty()) {
+            return null;
+        }
+
+        const x = this.targetX.shift();
+        const y = this.targetY.shift();
+        const z = this.targetZ.shift();
+        return { x, y, z };
+    }
+
+    isEmpty() {
+        return this.targetX.length === 0 && this.targetY.length === 0 && this.targetZ.length === 0;
+    }
+
+    size() {
+        return Math.min(this.targetX.length, this.targetY.length, this.targetZ.length);
+    }
 }
 
 const TotalAPI = 'http://192.168.41.166:5000/';
 
+
 // 获取指引无人机飞行位置的流json数据
-function fetchJSONData_Moveto() {
+function fetchJSONData_Moveto(drones) {
     api = TotalAPI + `streamjson`;
     const eventSource = new EventSource(api);
+
+    drones.forEach(value => {
+        value.targetX = [];
+        value.targetY = [];
+        value.targetZ = [];
+    });
 
     eventSource.onmessage = function (event) {
         // 将数据解析为JSON
         const data = JSON.parse(event.data);
         console.log("Received data:", data);
-
+        
+        drones.forEach(value => {
+            const record = data.find(item => item.id === value.id);
+            value.enqueue(record.nextstep.nx, record.nextstep.ny, record.nextstep.nz);
+        });
         return data;
     };
 }
