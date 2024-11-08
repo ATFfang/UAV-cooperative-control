@@ -33,7 +33,7 @@ def limit_turn(steering, max_turn_rate):
 
 # 定义无人机类
 class UAV:
-    def __init__(self, position, velocity=None, mass=400.0, max_speed=10.0, max_turn_rate=20, radius=0.2, repulsion_distance=10.0):
+    def __init__(self, position, velocity=None, mass=400.0, max_speed=10.0, max_turn_rate=20, radius=0.2, repulsion_distance=1):
         self.position = position
         self.velocity = velocity if velocity is not None else vec3(0, 0, 0)
         self.mass = mass
@@ -62,7 +62,7 @@ class UAV:
         self.velocity = truncate(self.velocity, self.max_speed)
         new_position = self.position + self.velocity * time_elapsed
 
-        if length(target_position - new_position) < 50.0:
+        if length(target_position - new_position) < 5:
             self.velocity = vec3(0, 0, 0)
             self.reached_target = True
 
@@ -102,7 +102,7 @@ class UAV:
         return total_repulsion
     
 # 检测两架无人机之间的距离
-def check_distances(drones, min_distance=10.0):
+def check_distances(drones, min_distance=1):
     for i in range(len(drones)):
         for j in range(i + 1, len(drones)):
             distance = np.linalg.norm(drones[i].position - drones[j].position)
@@ -150,13 +150,17 @@ def simulate(input_json, time_step=1, steps=10):
             lon, lat = transform(input_proj, output_proj, drone.position[0], drone.position[1])
             altitude = drone.position[2]
 
+            ifarrival = 0
+            if step == steps - 1:
+                ifarrival = 1
+
             drone_data = {
                 "id": data[i]["id"],
                 "timestamp": step + 1,  # 将timestamp设置为秒数
                 "statusinfo": {
                     "speed": np.linalg.norm(drone.velocity),
                     "turnrate": drone.max_turn_rate,
-                    "ifarrival": int(drone.reached_target)
+                    "ifarrival": ifarrival
                 },
                 "nextstep": {
                     "nx": lon,

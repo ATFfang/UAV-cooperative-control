@@ -533,7 +533,6 @@ document.getElementById('cleantargetButton').addEventListener('click', () => {
     moveTarget = null
 
     const values = Object.values(droneclassdict);
-    console.log(values)
 })
 
 // 开始移动
@@ -545,11 +544,9 @@ document.getElementById('movetotargetButton').addEventListener('click', () => {
     postJSONData(values);
 
     addText("开始计算");
-
-    fetchJSONData_Moveto(values)
     
     // 创建用于移动无人机的函数
-    function moveDrone(drone, totalMoveTime) {
+    function moveDroneonestep(drone, totalMoveTime) {
         const startX = drone.x;
         const startY = drone.y;
         const startZ = drone.z;
@@ -595,7 +592,26 @@ document.getElementById('movetotargetButton').addEventListener('click', () => {
 
     }
 
-    // 对所有无人机调用 moveDrone 函数
-    // values.forEach(drone => moveDrone(drone, 50));
+    function moveDrone(drone, totalMoveTime) {
+        while (!drone.isEmpty()) {
+            // 出队一个值
+            const { x, y, z } = drone.dequeue();
+    
+            drone.targetX = x;
+            drone.targetY = y;
+            drone.targetZ = z;
+            
+            moveDroneonestep(drone, totalMoveTime);
+        }
+    }
+
+    fetchJSONData_Moveto(values)
+
+    setTimeout(() => {
+        addText("开始移动");
+        
+        // 对所有无人机调用 moveDrone 函数
+        values.forEach(drone => moveDrone(drone, 5));
+    }, 30000);
     
 });

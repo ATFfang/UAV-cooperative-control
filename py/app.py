@@ -36,7 +36,7 @@ def generate_json():
 
         for data in data_list:
             yield f"data: {json.dumps(data)}\n\n"
-            time.sleep(0.5)
+            # time.sleep(0.5)
 
     sendmessage = None
     return

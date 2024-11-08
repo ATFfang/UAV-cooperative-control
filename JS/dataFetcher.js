@@ -6,9 +6,12 @@ class Drone {
         this.z = z; // Z坐标
         this.droneobject = null;
         this.id = id
-        this.targetX = [];
-        this.targetY = [];
-        this.targetZ = [];
+        this.targetX = 0;
+        this.targetY = 0;
+        this.targetZ = 0;
+        this.nextX = [];
+        this.nextY = [];
+        this.nextZ = [];
         this.shining = false;
         this.Dradius = 0.2;
         this.CAradius = 10;
@@ -20,9 +23,9 @@ class Drone {
     }
 
     enqueue(x, y, z) {
-        this.targetX.push(x);
-        this.targetY.push(y);
-        this.targetZ.push(z);
+        this.nextX.push(x);
+        this.nextY.push(y);
+        this.nextZ.push(z);
     }
 
     dequeue() {
@@ -30,18 +33,18 @@ class Drone {
             return null;
         }
 
-        const x = this.targetX.shift();
-        const y = this.targetY.shift();
-        const z = this.targetZ.shift();
+        const x = this.nextX.shift();
+        const y = this.nextY.shift();
+        const z = this.nextZ.shift();
         return { x, y, z };
     }
 
     isEmpty() {
-        return this.targetX.length === 0 && this.targetY.length === 0 && this.targetZ.length === 0;
+        return this.nextX.length === 0 && this.nextY.length === 0 && this.nextZ.length === 0;
     }
 
     size() {
-        return Math.min(this.targetX.length, this.targetY.length, this.targetZ.length);
+        return Math.min(this.nextX.length, this.nextY.length, this.nextZ.length);
     }
 }
 
@@ -52,11 +55,12 @@ const TotalAPI = 'http://192.168.41.166:5000/';
 function fetchJSONData_Moveto(drones) {
     api = TotalAPI + `streamjson`;
     const eventSource = new EventSource(api);
+    let ifarrival = 0;
 
     drones.forEach(value => {
-        value.targetX = [];
-        value.targetY = [];
-        value.targetZ = [];
+        value.nextX = [];
+        value.nextY = [];
+        value.nextZ = [];
     });
 
     eventSource.onmessage = function (event) {
@@ -67,16 +71,21 @@ function fetchJSONData_Moveto(drones) {
         drones.forEach(value => {
             const record = data.find(item => item.id === value.id);
             value.enqueue(record.nextstep.nx, record.nextstep.ny, record.nextstep.nz);
-        });
-        return data;
+            ifarrival += record.statusinfo.ifarrival;
+        });   
     };
+
+    if(ifarrival == 5){
+        console.log(ifarrival)
+        return data;
+    }
 }
 
 // post无人机状态json至后端
 function postJSONData(droneclassdict) {
     api = TotalAPI + `endpoint`;
     
-    console.log(JSON.stringify({ message: constructionJSONData(droneclassdict) }))
+    // console.log(JSON.stringify({ message: constructionJSONData(droneclassdict) }))
     
     fetch(api, {
         method: 'POST',
