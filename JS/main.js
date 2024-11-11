@@ -12,10 +12,6 @@ const viewer = new Cesium.Viewer("cesiumContainer", {
     navigationHelpButton: false,// 关闭导航帮助按钮
     baseLayerPicker: true      // 关闭图层选择器
 });
-viewer.terrainProvider = Cesium.createWorldTerrain({
-    requestVertexNormals: true, // 启用法线，用于光照效果
-    requestWaterMask: true // 启用水面效果
-});
 
 const viewer2 = new Cesium.Viewer("sideContainer_middle_map", {
     animation: false,           // 关闭左下角的动画控件
@@ -620,14 +616,16 @@ document.getElementById('movetotargetButton').addEventListener('click', () => {
         });
     }
 
-    fetchJSONData_Moveto(values).then(() => {
-        // 当 fetchJSONData_Moveto 返回值后，执行下面的逻辑
-        addText("开始移动");
+    // fetchJSONData_Moveto(values).then(() => {
+    //     // 当 fetchJSONData_Moveto 返回值后，执行下面的逻辑
+    //     addText("开始移动");
 
-        // 对所有无人机调用 moveDrone 函数
-        Promise.all(values.map(drone => moveDrone(drone, 5)))
-    }).catch((error) => {
-        console.error("Error occurred:", error);
-    });
+    //     // 对所有无人机调用 moveDrone 函数
+    //     Promise.all(values.map(drone => moveDrone(drone, 5)))
+    // }).catch((error) => {
+    //     console.error("Error occurred:", error);
+    // });
+
+    fetchJSONData_Moveto(values)
 
 });

@@ -34,7 +34,6 @@ def generate_json():
     if(sendmessage):
         data = simulate(sendmessage)
         return f"data: {json.dumps(data)}\n\n"
-            # time.sleep(0.5)
 
     sendmessage = None
     return
@@ -42,7 +41,12 @@ def generate_json():
 @app.route('/streamjson')
 def stream():
     # 使用SSE流传输数据
-    return Response(generate_json())
+    return generate_json()
+
+@app.route('/test')
+def test():
+    # 使用SSE流传输数据
+    return json.dumps({"message": "Hello, World!"})
 
 # 定义一个路由，接收 POST 请求的 JSON 数据
 @app.route('/endpoint', methods=['POST'])
@@ -52,7 +56,7 @@ def receive_data():
 
     global sendmessage
     sendmessage = data["message"]
-    
+    print("已接受数据")
     # 返回响应
     return jsonify({'message': 'Data received successfully!'})
 

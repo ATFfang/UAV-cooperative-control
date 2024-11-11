@@ -48,56 +48,36 @@ class Drone {
     }
 }
 
-const TotalAPI = 'http://192.168.41.166:5000/';
+const TotalAPI = 'http://172.20.10.10:5000/';
 
 
 // 获取指引无人机飞行位置的流json数据
 function fetchJSONData_Moveto(drones) {
     api = TotalAPI + `streamjson`;
-    const eventSource = new EventSource(api);
-    let ifarrival = 0;
+    fetch(api)
+        .then(response => {
+            // 检查响应是否成功
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json(); // 将响应解析为 JSON
+        })
+        .then(jsonData => {
+            // 在这里处理 jsonData
+            console.log('接收到的数据:', jsonData);
 
-    drones.forEach(value => {
-        value.nextX = [];
-        value.nextY = [];
-        value.nextZ = [];
-    });
-
-    return new Promise((resolve, reject) => {
-        eventSource.onmessage = function (event) {
-            // 将数据解析为JSON
-            const data = JSON.parse(event.data);
-            console.log(data);
-            // drones.forEach(value => {
-            //     const record = data.find(item => item.id === value.id);
-            //     value.enqueue(record.nextstep.nx, record.nextstep.ny, record.nextstep.nz);
-            //     ifarrival += record.statusinfo.ifarrival;
-            // });
-
-            // // 检查 ifarrival 是否等于无人机数量
-            // if (ifarrival === drones.length) {
-            //     // 停止事件流
-            //     eventSource.close();
-            //     // 解析 Promise，表示所有无人机到达
-            //     resolve("All drones have arrived");
-            //     console.log("All drones have arrived")
-            // }
-        };
-
-        // eventSource.onerror = function (err) {
-        //     // 处理错误情况并拒绝 Promise
-        //     eventSource.close();
-        //     reject("Error occurred in fetching data");
-        // };
-    });
+        })
+        .catch(error => {
+            console.error('获取数据失败:', error);
+        });
 }
 
 // post无人机状态json至后端
 function postJSONData(droneclassdict) {
     api = TotalAPI + `endpoint`;
-    
+
     // console.log(JSON.stringify({ message: constructionJSONData(droneclassdict) }))
-    
+
     fetch(api, {
         method: 'POST',
         headers: {
@@ -132,7 +112,7 @@ function constructionJSONData(droneclassdict) {
                 "y": drone.y,
                 "z": drone.z
             },
-            "target":{
+            "target": {
                 "targetx": drone.targetX,
                 "targety": drone.targetY,
                 "targetz": drone.targetZ
@@ -159,7 +139,7 @@ function deconstructionJSONData(json, droneclassdict) {
         drone.nextx = dronejsonobject.nextstep.nx;
         drone.nexty = dronejsonobject.nextstep.ny;
         drone.nextz = dronejsonobject.nextstep.nz;
-        
+
         drone.speed = dronejsonobject.statusinfo.speed;
         drone.turnrate = dronejsonobject.statusinfo.turnrate;
         drone.ifarrival = dronejsonobject.statusinfo.ifarrival;

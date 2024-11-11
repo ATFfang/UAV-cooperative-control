@@ -114,17 +114,18 @@ def check_distances(drones, min_distance=1):
 def simulate(input_json, time_step=1, steps=200):
     
     data = json.loads(input_json)
-
-    print(type(data))    
+ 
     drones = []
+    all_results = []  # 用于存储所有无人机的最终输出数据
+
     for drone_data in data:
         # 初始化无人机属性
         position = vec3(drone_data["geometry"]["x"], drone_data["geometry"]["y"], drone_data["geometry"]["z"])
         velocity = vec3(0, 0, 0)  # 初始化速度
         max_speed = drone_data["baseinfo"]["maxspeed"]
         max_turn_rate = drone_data["baseinfo"]["maxturnrate"]
-        
-        # 创建无人机实例
+
+        # 创建无人机实例并初始化输出结构
         drone = UAV(
             position=position,
             velocity=velocity,
@@ -135,42 +136,42 @@ def simulate(input_json, time_step=1, steps=200):
         )
         drones.append(drone)
 
-    # 设定目标位置
+        # 初始化输出数据结构
+        all_results.append({
+            "id": drone_data["id"],
+            "time_interval": time_step,
+            "statusinfo": {
+                "speeds": [],  # 记录每一步的速度
+                "ifarrival": 0  # 最终的到达状态
+            },
+            "path": {
+                "nx": [],  # 记录每一步的x坐标
+                "ny": [],  # 记录每一步的y坐标
+                "nz": []   # 记录每一步的z坐标
+            }
+        })
+
     target_positions = [vec3(d["target"]["targetx"], d["target"]["targety"], d["target"]["targetz"]) for d in data]
-    print(target_positions)  
     input_proj = Proj(init='epsg:3857')  # 墨卡托投影
     output_proj = Proj(init='epsg:4326')  # WGS84地理坐标
-    
-    all_results = []
+
     for step in range(steps):
-        result = []
         for i, drone in enumerate(drones):
             drone.update(time_step, target_positions[i], drones)
 
+            # 转换投影坐标到地理坐标
             lon, lat = transform(input_proj, output_proj, drone.position[0], drone.position[1])
             altitude = drone.position[2]
 
-            ifarrival = 0
-            if step == steps - 1:
-                ifarrival = 1
+            # 记录每一步的数据
+            all_results[i]["path"]["nx"].append(lon)
+            all_results[i]["path"]["ny"].append(lat)
+            all_results[i]["path"]["nz"].append(altitude)
+            all_results[i]["statusinfo"]["speeds"].append(np.linalg.norm(drone.velocity))
 
-            drone_data = {
-                "id": data[i]["id"],
-                "timestamp": step + 1,  # 将timestamp设置为秒数
-                "statusinfo": {
-                    "speed": np.linalg.norm(drone.velocity),
-                    "turnrate": drone.max_turn_rate,
-                    "ifarrival": ifarrival
-                },
-                "nextstep": {
-                    "nx": lon,
-                    "ny": lat,
-                    "nz": altitude
-                }
-            }
-            result.append(drone_data)
-        print(result[0])    
-        all_results.append(result)
+            # 如果无人机到达目标，将到达标志设为1
+            if drone.reached_target:
+                all_results[i]["statusinfo"]["ifarrival"] = 1
 
     return all_results
 
