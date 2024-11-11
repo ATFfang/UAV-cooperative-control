@@ -32,10 +32,8 @@ def generate_json():
     global sendmessage
     
     if(sendmessage):
-        data_list = simulate(sendmessage)
-
-        for data in data_list:
-            yield f"data: {json.dumps(data)}\n\n"
+        data = simulate(sendmessage)
+        return f"data: {json.dumps(data)}\n\n"
             # time.sleep(0.5)
 
     sendmessage = None
@@ -44,7 +42,7 @@ def generate_json():
 @app.route('/streamjson')
 def stream():
     # 使用SSE流传输数据
-    return Response(generate_json(), mimetype='text/event-stream')
+    return Response(generate_json())
 
 # 定义一个路由，接收 POST 请求的 JSON 数据
 @app.route('/endpoint', methods=['POST'])

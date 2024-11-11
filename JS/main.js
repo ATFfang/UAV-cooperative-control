@@ -12,6 +12,10 @@ const viewer = new Cesium.Viewer("cesiumContainer", {
     navigationHelpButton: false,// 关闭导航帮助按钮
     baseLayerPicker: true      // 关闭图层选择器
 });
+viewer.terrainProvider = Cesium.createWorldTerrain({
+    requestVertexNormals: true, // 启用法线，用于光照效果
+    requestWaterMask: true // 启用水面效果
+});
 
 const viewer2 = new Cesium.Viewer("sideContainer_middle_map", {
     animation: false,           // 关闭左下角的动画控件
@@ -122,12 +126,14 @@ document.getElementById('addButton').addEventListener('click', () => {
                 //添加三维无人机点
                 myBox = viewer.entities.add({
                     name: 'My 3D Box',
-                    position: new Cesium.CallbackProperty(()=>{
+                    position: new Cesium.CallbackProperty(() => {
                         return Cesium.Cartesian3.fromDegrees(drone.x, drone.y, drone.z);
                     }, false),
-                    ellipsoid: {
-                        radii: new Cesium.Cartesian3(0.5, 0.5, 0.5), // 球体的半径（x, y, z）
-                        material: Cesium.Color.RED.withAlpha(0.5) // 初始颜色和透明度
+                    model: {
+                        uri: 'DATA\\drone.glb', // 指定本地 glb 模型的路径
+                        minimumPixelSize: 64, // 模型的最小像素大小
+                        maximumScale: 200, // 模型的最大缩放比例
+                        color: Cesium.Color.RED.withAlpha(0.5) // 可选：为模型应用颜色和透明度
                     }
                 });
 
@@ -544,7 +550,7 @@ document.getElementById('movetotargetButton').addEventListener('click', () => {
     postJSONData(values);
 
     addText("开始计算");
-    
+
     // 创建用于移动无人机的函数
     function moveDroneonestep(drone, totalMoveTime) {
         const startX = drone.x;
@@ -552,7 +558,7 @@ document.getElementById('movetotargetButton').addEventListener('click', () => {
         const startZ = drone.z;
         let i = 0;
 
-        const intervalID = setInterval(()=>{
+        const intervalID = setInterval(() => {
             t = i / totalMoveTime;
 
             const currentX = Cesium.Math.lerp(startX, drone.targetX, t);
@@ -563,7 +569,7 @@ document.getElementById('movetotargetButton').addEventListener('click', () => {
             var path = [Cesium.Cartesian3.fromDegrees(drone.x, drone.y),
             Cesium.Cartesian3.fromDegrees(currentX, currentY)]
             drawPath(path, viewer2)
-            
+
             // 在主地图上修改位置
             drone.x = currentX;
             drone.y = currentY;
@@ -588,30 +594,40 @@ document.getElementById('movetotargetButton').addEventListener('click', () => {
             if (i > totalMoveTime) {
                 clearInterval(intervalID); // 停止定时器
             }
-        }, 10);
+        }, totalMoveTime);
 
     }
 
-    function moveDrone(drone, totalMoveTime) {
-        while (!drone.isEmpty()) {
-            // 出队一个值
-            const { x, y, z } = drone.dequeue();
-    
-            drone.targetX = x;
-            drone.targetY = y;
-            drone.targetZ = z;
-            
-            moveDroneonestep(drone, totalMoveTime);
-        }
-    }
 
-    fetchJSONData_Moveto(values)
-
-    setTimeout(() => {
-        addText("开始移动");
+    async function moveDrone(drone, totalMoveTime) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                while (!drone.isEmpty()) {
+                    // 出队一个值
+                    const { x, y, z } = drone.dequeue();
         
+                    drone.targetX = x;
+                    drone.targetY = y;
+                    drone.targetZ = z;
+        
+                    moveDroneonestep(drone, totalMoveTime);
+                }
+
+                resolve(); // 成功时解决 Promise
+            } catch (error) {
+                reject(error); // 出现错误时拒绝 Promise
+            }
+        });
+    }
+
+    fetchJSONData_Moveto(values).then(() => {
+        // 当 fetchJSONData_Moveto 返回值后，执行下面的逻辑
+        addText("开始移动");
+
         // 对所有无人机调用 moveDrone 函数
-        values.forEach(drone => moveDrone(drone, 5));
-    }, 30000);
-    
+        Promise.all(values.map(drone => moveDrone(drone, 5)))
+    }).catch((error) => {
+        console.error("Error occurred:", error);
+    });
+
 });

@@ -63,22 +63,33 @@ function fetchJSONData_Moveto(drones) {
         value.nextZ = [];
     });
 
-    eventSource.onmessage = function (event) {
-        // 将数据解析为JSON
-        const data = JSON.parse(event.data);
-        console.log("Received data:", data);
-        
-        drones.forEach(value => {
-            const record = data.find(item => item.id === value.id);
-            value.enqueue(record.nextstep.nx, record.nextstep.ny, record.nextstep.nz);
-            ifarrival += record.statusinfo.ifarrival;
-        });   
-    };
+    return new Promise((resolve, reject) => {
+        eventSource.onmessage = function (event) {
+            // 将数据解析为JSON
+            const data = JSON.parse(event.data);
+            console.log(data);
+            // drones.forEach(value => {
+            //     const record = data.find(item => item.id === value.id);
+            //     value.enqueue(record.nextstep.nx, record.nextstep.ny, record.nextstep.nz);
+            //     ifarrival += record.statusinfo.ifarrival;
+            // });
 
-    if(ifarrival == 5){
-        console.log(ifarrival)
-        return data;
-    }
+            // // 检查 ifarrival 是否等于无人机数量
+            // if (ifarrival === drones.length) {
+            //     // 停止事件流
+            //     eventSource.close();
+            //     // 解析 Promise，表示所有无人机到达
+            //     resolve("All drones have arrived");
+            //     console.log("All drones have arrived")
+            // }
+        };
+
+        // eventSource.onerror = function (err) {
+        //     // 处理错误情况并拒绝 Promise
+        //     eventSource.close();
+        //     reject("Error occurred in fetching data");
+        // };
+    });
 }
 
 // post无人机状态json至后端

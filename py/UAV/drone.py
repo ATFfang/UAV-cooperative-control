@@ -111,7 +111,7 @@ def check_distances(drones, min_distance=1):
 
 # 定义UAV类和其他必要的函数（不变）
 
-def simulate(input_json, time_step=1, steps=10):
+def simulate(input_json, time_step=1, steps=200):
     
     data = json.loads(input_json)
 
