@@ -129,7 +129,7 @@ document.getElementById('addButton').addEventListener('click', () => {
                         uri: 'DATA\\drone.glb', // 指定本地 glb 模型的路径
                         minimumPixelSize: 64, // 模型的最小像素大小
                         maximumScale: 200, // 模型的最大缩放比例
-                        color: Cesium.Color.RED.withAlpha(0.5) // 可选：为模型应用颜色和透明度
+                        color: Cesium.Color.BLUE.withAlpha(0.5) // 可选：为模型应用颜色和透明度
                     }
                 });
 
@@ -342,10 +342,11 @@ function drawTable(height, label, chart) {
             backgroundColor: 'rgba(0, 123, 255, 0.2)',
             data: [],
             fill: false,
-            pointRadius: 2,
+            pointRadius: 0,
             borderWidth: 1,
         };
         chart.data.datasets.push(dataset); // 将新数据集添加到数据集中
+        console.log(chart.data.datasets);
     }
     // 将新数据点添加到数据集中
     dataset.data.push({ x: now, y: height });
@@ -498,7 +499,7 @@ document.getElementById("control-btn-up").addEventListener('mouseenter', functio
     moveInterval = setInterval(function () {
         if (moveTarget != null) {
             // 执行目标对象的移动操作
-            moveTarget.z += 0.5;
+            moveTarget.z += 2.5;
             moveTarget.targetobject.position = Cesium.Cartesian3.fromDegrees(moveTarget.x, moveTarget.y, moveTarget.z);
         }
     }, 100);  // 每0.2秒执行一次
@@ -514,7 +515,7 @@ document.getElementById("control-btn-down").addEventListener('mouseenter', funct
     moveInterval = setInterval(function () {
         if (moveTarget != null) {
             // 执行目标对象的移动操作
-            moveTarget.z -= 0.5;
+            moveTarget.z -= 2.5;
             if (moveTarget.z < 0) {
                 moveTarget.z = 0;
             }
@@ -539,30 +540,8 @@ document.getElementById('cleantargetButton').addEventListener('click', () => {
 
 // 开始移动
 document.getElementById('movetotargetButton').addEventListener('click', () => {
-
-    async function Move() {
-        try {
-            const values = Object.values(droneclassdict);
-            // post无人机状态到后端
-            const result = await postJSONData(values);
-            addText("开始计算");
-
-            fetchJSONData_Moveto(values).then(() => {
-                // 当 fetchJSONData_Moveto 返回值后，执行下面的逻辑
-                addText("开始移动");
-                console.log(values);
-        
-                // 对所有无人机调用 moveDrone 函数
-                Promise.all(values.map(drone => moveDrone(drone, 5)))
-            }).catch((error) => {
-                console.error("Error occurred:", error);
-            });
-
-        } catch (error) {
-            console.error('POST 请求失败:', error);
-        }
-    }
-
+    let i_table = 0;
+    
     // 创建用于移动无人机的函数
     function moveDroneonestep(drone, totalMoveTime) {
         const startX = drone.x;
@@ -570,16 +549,20 @@ document.getElementById('movetotargetButton').addEventListener('click', () => {
         const startZ = drone.z;
         let i = 0;
 
+        // viewer2.scene.requestRender();
+
         drone.x = drone.targetX;
         drone.y = drone.targetY;
         drone.z = drone.targetZ;
 
-        var path = [Cesium.Cartesian3.fromDegrees(startX, startY),
-        Cesium.Cartesian3.fromDegrees(drone.x, drone.y)]
-        drawPath(path, viewer2)
+        let lenDict = Object.keys(droneclassdict).length;
+        let rangeArray = Array.from({ length: lenDict }, (_, i) => i);
+        if (rangeArray.includes(i_table % 50)) {
+            // 在表上跟新高度
+            drawTable(drone.z, drone.id, myChart)
+        }
+        i_table++;
 
-        // 在表上跟新高度
-        drawTable(drone.z, drone.id, myChart)
 
         // const intervalID = setInterval(() => {
         //     t = i / totalMoveTime;
@@ -636,7 +619,12 @@ document.getElementById('movetotargetButton').addEventListener('click', () => {
                     drone.targetZ = z;
                     moveDroneonestep(drone, totalMoveTime);
 
-                    await delay(10);
+                    // var path = [Cesium.Cartesian3.fromDegrees(121.4739, 31.2304),
+                    //     Cesium.Cartesian3.fromDegrees(121.4739, 31.2309)]
+                    //     drawPath(path, viewer2)
+
+                    
+                    await delay(5);
                 }
 
                 resolve(); // 成功时解决 Promise
@@ -644,6 +632,40 @@ document.getElementById('movetotargetButton').addEventListener('click', () => {
                 reject(error); // 出现错误时拒绝 Promise
             }
         });
+    }
+
+    async function Move() {
+        try {
+            const values = Object.values(droneclassdict);
+
+            moveTarget.x = 121.4738
+            moveTarget.y = 31.2305
+            moveTarget.z = 50
+
+            values.forEach(drone => {
+                drone.targetX = moveTarget.x;
+                drone.targetY = moveTarget.y;
+                drone.targetZ = moveTarget.z;
+            });
+
+            // post无人机状态到后端
+            const result = await postJSONData(values);
+            addText("开始计算");
+
+            fetchJSONData_Moveto(values).then(() => {
+                // 当 fetchJSONData_Moveto 返回值后，执行下面的逻辑
+                addText("开始移动");
+                console.log(values);
+
+                // 对所有无人机调用 moveDrone 函数
+                Promise.all(values.map(drone => moveDrone(drone, 5)))
+            }).catch((error) => {
+                console.error("Error occurred:", error);
+            });
+
+        } catch (error) {
+            console.error('POST 请求失败:', error);
+        }
     }
 
     Move()

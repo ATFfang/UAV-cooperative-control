@@ -33,6 +33,8 @@ def generate_json():
     
     if(sendmessage):
         starttime = time.time()
+        #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        # print("开始模拟")
         # data = simulate(sendmessage)
         endtime = time.time()
         print("time cost: ", endtime - starttime)

@@ -33,7 +33,7 @@ def limit_turn(steering, max_turn_rate):
 
 # 定义无人机类
 class UAV:
-    def __init__(self, position, velocity=None, mass=400.0, max_speed=10.0, max_turn_rate=20, radius=0.2, repulsion_distance=1):
+    def __init__(self, position, velocity=None, mass=400.0, max_speed=10.0, max_turn_rate=20, radius=0.2, repulsion_distance=1.0):
         self.position = position
         self.velocity = velocity if velocity is not None else vec3(0, 0, 0)
         self.mass = mass
@@ -42,34 +42,44 @@ class UAV:
         self.acceleration = vec3(0, 0, 0)
         self.radius = radius
         self.repulsion_distance = repulsion_distance
-        self.path = [self.position]
-        self.reached_target = False
+        self.path = []
+        self.reached_target = False    # 是否到达目标点
 
+    # 计算加速度
     def apply_force(self, force):
         self.acceleration = force / self.mass
-
+    
+    # 更新位置和速度信息
     def update(self, time_elapsed, target_position, others):
         if self.reached_target:
             self.velocity = vec3(0, 0, 0)
             return
 
-        steering_force = self.seek(target_position)
-        repulsion_force = self.avoid_collision(others)
+        steering_force = self.seek(target_position)    # 目标吸引力
+        repulsion_force = self.avoid_collision(others) # 个体排斥力
         total_force = steering_force + repulsion_force
         self.apply_force(total_force)
 
+        # 更新速度和位置
         self.velocity += self.acceleration * time_elapsed
         self.velocity = truncate(self.velocity, self.max_speed)
         new_position = self.position + self.velocity * time_elapsed
 
-        if length(target_position - new_position) < 5:
-            self.velocity = vec3(0, 0, 0)
+        # 检查是否已到达目标
+        if 0 < length(target_position - new_position) < 10.0:
+            self.velocity = vec3(0, 0, 0)  # 速度清零
             self.reached_target = True
 
+        # 更新位置并记录路径
         self.position = new_position
-        self.path.append(self.position.copy())
+        input_proj = Proj(init='epsg:3857')  # 墨卡托投影
+        output_proj = Proj(init='epsg:4326')  # WGS84地理坐标
+        x,y = transform(input_proj,output_proj,self.position[0], self.position[1])
+        self.path.append([x, y, self.position[2]])
 
-    def seek(self, target_position, deceleration=0.3):
+
+    # 目标吸引力
+    def seek(self, target_position, deceleration=0.1):
         desired_velocity = target_position - self.position
         distance_to_target = length(desired_velocity)
 
@@ -80,38 +90,29 @@ class UAV:
             return limit_turn(desired_velocity - self.velocity, self.max_turn_rate)
 
         return vec3(0, 0, 0)
-
+    
+    # 无人机之间排斥力的计算
     def avoid_collision(self, others):
-        if self.reached_target:
-            return vec3(0, 0, 0)
-
+        min_repulsion_distance = self.repulsion_distance
         total_repulsion = vec3(0, 0, 0)
+        
         for other in others:
             if other is self:
                 continue
+            
             direction_to_other = other.position - self.position
             distanceSQ = length(direction_to_other)
-            if distanceSQ > self.repulsion_distance ** 2:
-                continue
-
-            distance = np.sqrt(distanceSQ)
-            normalized_direction = normalize(direction_to_other)
-            repulsion_strength = 1000 / (distance ** 2 + 1)
-            total_repulsion += -normalized_direction * repulsion_strength
+            
+            if distanceSQ < (self.repulsion_distance if not self.reached_target else min_repulsion_distance) ** 2:
+                distance = np.sqrt(distanceSQ)
+                normalized_direction = normalize(direction_to_other)
+                # 使用较小的排斥力系数，如果无人机已到达目标
+                repulsion_strength = (100 if self.reached_target else 1000) / (distance ** 2 + 1)
+                total_repulsion += -normalized_direction * repulsion_strength
 
         return total_repulsion
-    
-# 检测两架无人机之间的距离
-def check_distances(drones, min_distance=1):
-    for i in range(len(drones)):
-        for j in range(i + 1, len(drones)):
-            distance = np.linalg.norm(drones[i].position - drones[j].position)
-            if distance < min_distance:
-                print(f"Warning: Distance between UAV {i+1} and UAV {j+1} is {distance:.2f} meters, which is below the minimum distance of {min_distance} meters.")
 
-# 定义UAV类和其他必要的函数（不变）
-
-def simulate(input_json, time_step=1, steps=200):
+def simulate(input_json, time_step=1, steps=1000):
     
     data = json.loads(input_json)
  
@@ -178,4 +179,4 @@ def simulate(input_json, time_step=1, steps=200):
     return all_results
 
 if "__name__" == "__main__":
-    simulate("drones.json", time_step=1, steps=10)
+    simulate("drones.json", time_step=0.5, steps=1000)

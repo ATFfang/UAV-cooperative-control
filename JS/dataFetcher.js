@@ -88,6 +88,7 @@ function fetchJSONData_Moveto(drones) {
 async function postJSONData(droneclassdict) {
     api = TotalAPI + `endpoint`;
 
+    console.log(constructionJSONData(droneclassdict))
     // 返回一个 Promise，以便在外部等待数据返回
     return fetch(api, {
         method: 'POST',
