@@ -32,8 +32,14 @@ def generate_json():
     global sendmessage
     
     if(sendmessage):
-        data = simulate(sendmessage)
-        return f"data: {json.dumps(data)}\n\n"
+        starttime = time.time()
+        # data = simulate(sendmessage)
+        endtime = time.time()
+        print("time cost: ", endtime - starttime)
+        with open('output_all_steps.json', 'r', encoding='utf-8') as file:
+            data = json.load(file)
+        # return f"data: {json.dumps(data)}\n\n"
+        return data
 
     sendmessage = None
     return
@@ -62,4 +68,5 @@ def receive_data():
 
 if __name__ == '__main__':
 
-    app.run(host=get_local_ip(), port=5000, debug=True)
+    # app.run(host=get_local_ip(), port=5000, debug=True)
+    app.run(host='127.0.0.1', port=5000, debug=True)

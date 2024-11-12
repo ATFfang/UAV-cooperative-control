@@ -48,50 +48,71 @@ class Drone {
     }
 }
 
-const TotalAPI = 'http://172.20.10.10:5000/';
+const TotalAPI = 'http://127.0.0.1:5000/';
 
 
 // 获取指引无人机飞行位置的流json数据
 function fetchJSONData_Moveto(drones) {
-    api = TotalAPI + `streamjson`;
-    fetch(api)
-        .then(response => {
-            // 检查响应是否成功
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json(); // 将响应解析为 JSON
-        })
-        .then(jsonData => {
-            // 在这里处理 jsonData
-            console.log('接收到的数据:', jsonData);
-
-        })
-        .catch(error => {
-            console.error('获取数据失败:', error);
-        });
+    return new Promise((resolve, reject) => {
+        const api = TotalAPI + `streamjson`;
+        fetch(api)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(jsonData => {
+                console.log('接收到的数据:', jsonData);
+                jsonData.forEach(data => {
+                    const id = data.id;
+                    drones.forEach(drone => {
+                        if (drone.id == id) {
+                            for (let i = 0; i < data.path.nx.length; i++) {
+                                drone.enqueue(data.path.nx[i], data.path.ny[i], data.path.nz[i]);
+                            }
+                        }
+                    });
+                });
+                resolve();  // 在数据处理完后，标记完成
+            })
+            .catch(error => {
+                console.error('获取数据失败:', error);
+                reject(error);  // 如果有错误，返回失败状态
+            });
+    });
 }
 
+
 // post无人机状态json至后端
-function postJSONData(droneclassdict) {
+async function postJSONData(droneclassdict) {
     api = TotalAPI + `endpoint`;
 
-    // console.log(JSON.stringify({ message: constructionJSONData(droneclassdict) }))
-
-    fetch(api, {
+    // 返回一个 Promise，以便在外部等待数据返回
+    return fetch(api, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({ message: constructionJSONData(droneclassdict) })  // 将消息封装为JSON
     })
-        .then(response => response.json())
-        .then(data => {
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
+    .then(response => {
+        // 检查响应是否成功
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();  // 将响应解析为 JSON
+    })
+    .then(data => {
+        console.log('POST 成功，返回的数据:', data);
+        return data;  // 返回成功的数据，以便调用者使用
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        throw error;  // 将错误抛出，以便调用者处理
+    });
 }
+
 
 // Drone -> json构建函数
 function constructionJSONData(droneclassdict) {

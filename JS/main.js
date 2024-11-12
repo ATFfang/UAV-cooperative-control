@@ -540,12 +540,28 @@ document.getElementById('cleantargetButton').addEventListener('click', () => {
 // 开始移动
 document.getElementById('movetotargetButton').addEventListener('click', () => {
 
-    const values = Object.values(droneclassdict);
+    async function Move() {
+        try {
+            const values = Object.values(droneclassdict);
+            // post无人机状态到后端
+            const result = await postJSONData(values);
+            addText("开始计算");
 
-    // post无人机状态到后端
-    postJSONData(values);
+            fetchJSONData_Moveto(values).then(() => {
+                // 当 fetchJSONData_Moveto 返回值后，执行下面的逻辑
+                addText("开始移动");
+                console.log(values);
+        
+                // 对所有无人机调用 moveDrone 函数
+                Promise.all(values.map(drone => moveDrone(drone, 5)))
+            }).catch((error) => {
+                console.error("Error occurred:", error);
+            });
 
-    addText("开始计算");
+        } catch (error) {
+            console.error('POST 请求失败:', error);
+        }
+    }
 
     // 创建用于移动无人机的函数
     function moveDroneonestep(drone, totalMoveTime) {
@@ -554,46 +570,60 @@ document.getElementById('movetotargetButton').addEventListener('click', () => {
         const startZ = drone.z;
         let i = 0;
 
-        const intervalID = setInterval(() => {
-            t = i / totalMoveTime;
+        drone.x = drone.targetX;
+        drone.y = drone.targetY;
+        drone.z = drone.targetZ;
 
-            const currentX = Cesium.Math.lerp(startX, drone.targetX, t);
-            const currentY = Cesium.Math.lerp(startY, drone.targetY, t);
-            const currentZ = Cesium.Math.lerp(startZ, drone.targetZ, t);
+        var path = [Cesium.Cartesian3.fromDegrees(startX, startY),
+        Cesium.Cartesian3.fromDegrees(drone.x, drone.y)]
+        drawPath(path, viewer2)
 
-            // 在小地图上绘制路径
-            var path = [Cesium.Cartesian3.fromDegrees(drone.x, drone.y),
-            Cesium.Cartesian3.fromDegrees(currentX, currentY)]
-            drawPath(path, viewer2)
+        // 在表上跟新高度
+        drawTable(drone.z, drone.id, myChart)
 
-            // 在主地图上修改位置
-            drone.x = currentX;
-            drone.y = currentY;
-            drone.z = currentZ;
+        // const intervalID = setInterval(() => {
+        //     t = i / totalMoveTime;
 
-            // 在表上跟新高度
-            drawTable(drone.z, drone.id, myChart)
+        //     const currentX = Cesium.Math.lerp(startX, drone.targetX, t);
+        //     const currentY = Cesium.Math.lerp(startY, drone.targetY, t);
+        //     const currentZ = Cesium.Math.lerp(startZ, drone.targetZ, t);
 
-            // 更新无人机状态栏
-            if (currentDroneId == drone.id) {
-                const richTextBox = document.getElementById('sideContainer_buttom_drone_richTextBox');
-                richTextBox.innerHTML = `
-                    <p style="margin: 0; line-height: 1;">id: ${drone.id}</p>
-                    <p style="margin: 0; line-height: 1;">x: ${drone.x.toFixed(4)}</p>
-                    <p style="margin: 0; line-height: 1;">y: ${drone.y.toFixed(4)}</p>
-                    <p style="margin: 0; line-height: 1;">z: ${drone.z.toFixed(4)}</p>
-                `;
-            }
+        //     // 在小地图上绘制路径
+        //     var path = [Cesium.Cartesian3.fromDegrees(drone.x, drone.y),
+        //     Cesium.Cartesian3.fromDegrees(currentX, currentY)]
+        //     drawPath(path, viewer2)
 
-            i++;
+        //     // 在主地图上修改位置
+        //     drone.x = currentX;
+        //     drone.y = currentY;
+        //     drone.z = currentZ;
 
-            if (i > totalMoveTime) {
-                clearInterval(intervalID); // 停止定时器
-            }
-        }, totalMoveTime);
+        //     // 在表上跟新高度
+        //     drawTable(drone.z, drone.id, myChart)
+
+        //     // 更新无人机状态栏
+        //     if (currentDroneId == drone.id) {
+        //         const richTextBox = document.getElementById('sideContainer_buttom_drone_richTextBox');
+        //         richTextBox.innerHTML = `
+        //             <p style="margin: 0; line-height: 1;">id: ${drone.id}</p>
+        //             <p style="margin: 0; line-height: 1;">x: ${drone.x.toFixed(4)}</p>
+        //             <p style="margin: 0; line-height: 1;">y: ${drone.y.toFixed(4)}</p>
+        //             <p style="margin: 0; line-height: 1;">z: ${drone.z.toFixed(4)}</p>
+        //         `;
+        //     }
+
+        //     i++;
+
+        //     if (i > totalMoveTime) {
+        //         clearInterval(intervalID); // 停止定时器
+        //     }
+        // }, totalMoveTime);
 
     }
 
+    function delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
 
     async function moveDrone(drone, totalMoveTime) {
         return new Promise(async (resolve, reject) => {
@@ -601,12 +631,12 @@ document.getElementById('movetotargetButton').addEventListener('click', () => {
                 while (!drone.isEmpty()) {
                     // 出队一个值
                     const { x, y, z } = drone.dequeue();
-        
                     drone.targetX = x;
                     drone.targetY = y;
                     drone.targetZ = z;
-        
                     moveDroneonestep(drone, totalMoveTime);
+
+                    await delay(10);
                 }
 
                 resolve(); // 成功时解决 Promise
@@ -616,16 +646,6 @@ document.getElementById('movetotargetButton').addEventListener('click', () => {
         });
     }
 
-    // fetchJSONData_Moveto(values).then(() => {
-    //     // 当 fetchJSONData_Moveto 返回值后，执行下面的逻辑
-    //     addText("开始移动");
-
-    //     // 对所有无人机调用 moveDrone 函数
-    //     Promise.all(values.map(drone => moveDrone(drone, 5)))
-    // }).catch((error) => {
-    //     console.error("Error occurred:", error);
-    // });
-
-    fetchJSONData_Moveto(values)
+    Move()
 
 });

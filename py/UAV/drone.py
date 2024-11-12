@@ -173,6 +173,8 @@ def simulate(input_json, time_step=1, steps=200):
             if drone.reached_target:
                 all_results[i]["statusinfo"]["ifarrival"] = 1
 
+    with open("output_all_steps.json", 'w') as output_file:
+        json.dump(all_results, output_file, indent=2)
     return all_results
 
 if "__name__" == "__main__":
