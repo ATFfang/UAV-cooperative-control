@@ -541,7 +541,7 @@ document.getElementById('cleantargetButton').addEventListener('click', () => {
 // 开始移动
 document.getElementById('movetotargetButton').addEventListener('click', () => {
     let i_table = 0;
-    
+
     // 创建用于移动无人机的函数
     function moveDroneonestep(drone, totalMoveTime) {
         const startX = drone.x;
@@ -610,6 +610,15 @@ document.getElementById('movetotargetButton').addEventListener('click', () => {
 
     async function moveDrone(drone, totalMoveTime) {
         return new Promise(async (resolve, reject) => {
+            const values = Object.values(droneclassdict);
+            values.forEach(drone => {
+                var path = []
+                for (var i = 0; i < drone.nextX.length; i++) {
+                    path.push(Cesium.Cartesian3.fromDegrees(drone.nextX[i], drone.nextY[i]))
+                }
+                drawPath(path, viewer2)
+
+            })
             try {
                 while (!drone.isEmpty()) {
                     // 出队一个值
@@ -618,12 +627,6 @@ document.getElementById('movetotargetButton').addEventListener('click', () => {
                     drone.targetY = y;
                     drone.targetZ = z;
                     moveDroneonestep(drone, totalMoveTime);
-
-                    // var path = [Cesium.Cartesian3.fromDegrees(121.4739, 31.2304),
-                    //     Cesium.Cartesian3.fromDegrees(121.4739, 31.2309)]
-                    //     drawPath(path, viewer2)
-
-                    
                     await delay(5);
                 }
 
@@ -668,6 +671,10 @@ document.getElementById('movetotargetButton').addEventListener('click', () => {
         }
     }
 
+
     Move()
+    // var path = [Cesium.Cartesian3.fromDegrees(121.4739, 31.2304),
+    //     Cesium.Cartesian3.fromDegrees(121.4739, 31.2309)]
+    //     drawPath(path, viewer2)
 
 });

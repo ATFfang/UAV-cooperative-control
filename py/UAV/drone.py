@@ -2,6 +2,7 @@ import numpy as np
 import time
 import json
 from pyproj import Proj,transform
+from pyproj import Transformer
 
 # 定义三维向量，表示位置坐标及高度
 def vec3(lon, lat, z):
@@ -72,10 +73,7 @@ class UAV:
 
         # 更新位置并记录路径
         self.position = new_position
-        input_proj = Proj(init='epsg:3857')  # 墨卡托投影
-        output_proj = Proj(init='epsg:4326')  # WGS84地理坐标
-        x,y = transform(input_proj,output_proj,self.position[0], self.position[1])
-        self.path.append([x, y, self.position[2]])
+        self.path.append(self.position)
 
 
     # 目标吸引力
@@ -111,7 +109,7 @@ class UAV:
                 total_repulsion += -normalized_direction * repulsion_strength
 
         return total_repulsion
-
+        
 def simulate(input_json, time_step=1, steps=1000):
     
     data = json.loads(input_json)
@@ -152,27 +150,32 @@ def simulate(input_json, time_step=1, steps=1000):
             }
         })
 
+        print("无人机初始位置：")
+        print(position)
+
     target_positions = [vec3(d["target"]["targetx"], d["target"]["targety"], d["target"]["targetz"]) for d in data]
-    input_proj = Proj(init='epsg:3857')  # 墨卡托投影
-    output_proj = Proj(init='epsg:4326')  # WGS84地理坐标
+    print("目标：")
+    print(target_positions)
 
     for step in range(steps):
         for i, drone in enumerate(drones):
             drone.update(time_step, target_positions[i], drones)
 
-            # 转换投影坐标到地理坐标
-            lon, lat = transform(input_proj, output_proj, drone.position[0], drone.position[1])
-            altitude = drone.position[2]
-
             # 记录每一步的数据
-            all_results[i]["path"]["nx"].append(lon)
-            all_results[i]["path"]["ny"].append(lat)
-            all_results[i]["path"]["nz"].append(altitude)
+            all_results[i]["path"]["nx"].append(drone.position[0])
+            all_results[i]["path"]["ny"].append(drone.position[1])
+            all_results[i]["path"]["nz"].append(drone.position[2])
             all_results[i]["statusinfo"]["speeds"].append(np.linalg.norm(drone.velocity))
 
             # 如果无人机到达目标，将到达标志设为1
             if drone.reached_target:
                 all_results[i]["statusinfo"]["ifarrival"] = 1
+
+    print("转换坐标")
+    # 抓换坐标
+    for i, drone in enumerate(drones):
+        transformer = Transformer.from_crs("EPSG:3857", "EPSG:4326", always_xy=True)
+        all_results[i]["path"]["nx"], all_results[i]["path"]["ny"] = transformer.transform(all_results[i]["path"]["nx"], all_results[i]["path"]["ny"])
 
     with open("output_all_steps.json", 'w') as output_file:
         json.dump(all_results, output_file, indent=2)
